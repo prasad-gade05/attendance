@@ -17,7 +17,7 @@ import {
 } from '../components/ui/select'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Plus, Edit2, Trash2, Combine, Split, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, Combine, Split, X, Palette, Info } from 'lucide-react'
 import { Subject } from '../types'
 import TimePicker from './TimePicker'
 import ConfirmDialog from './ConfirmDialog'
@@ -46,7 +46,7 @@ const Timetable = () => {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null)
   const [startTime, setStartTime] = useState('09:00')
   const [endTime, setEndTime] = useState('10:00')
-  const [subjectColor, setSubjectColor] = useState('#3b82f6')
+  const [subjectColor, setSubjectColor] = useState('#334155')
   
   // Confirmation dialogs state
   const [showDeleteSubjectDialog, setShowDeleteSubjectDialog] = useState<{show: boolean, subjectId: string}>({show: false, subjectId: ''})
@@ -86,7 +86,7 @@ const Timetable = () => {
     
     setSubjectDialogOpen(false)
     setEditingSubject(null)
-    setSubjectColor('#3b82f6')
+    setSubjectColor('#334155')
   }
   
   const handleAddTimeSlot = (e: React.FormEvent) => {
@@ -289,44 +289,61 @@ const Timetable = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
+    <div className="space-y-8 animate-slide-up">
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4">
         <Dialog open={subjectDialogOpen} onOpenChange={setSubjectDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingSubject(null)
-              setSubjectColor('#3b82f6')
-            }}>
+            <Button 
+              onClick={() => {
+                setEditingSubject(null)
+                setSubjectColor('#334155')
+              }}
+              className="bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200 animate-scale-in"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Subject
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md animate-scale-in">
             <DialogHeader>
-              <DialogTitle>
-                {editingSubject ? 'Edit Subject' : 'Add Subject'}
+              <DialogTitle className="flex items-center gap-2 text-slate-900">
+                {editingSubject ? (
+                  <>
+                    <Edit2 className="h-5 w-5 text-slate-600" />
+                    Edit Subject
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-5 w-5 text-slate-600" />
+                    Create New Subject
+                  </>
+                )}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleAddSubject} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Subject Name</Label>
+            <form onSubmit={handleAddSubject} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium text-slate-700">Subject Name</Label>
                 <Input 
                   id="name" 
                   name="name" 
                   defaultValue={editingSubject?.name || ''} 
                   required 
+                  className="transition-all duration-200 focus:ring-2 focus:ring-slate-400/20 border-slate-200"
+                  placeholder="Enter subject name..."
                 />
               </div>
-              <div>
-                <ColorPicker
-                  label="Color"
-                  name="color"
-                  value={editingSubject?.color || subjectColor}
-                  onChange={setSubjectColor}
-                />
-              </div>
-              <Button type="submit">
-                {editingSubject ? 'Update' : 'Add'} Subject
+              <ColorPicker
+                label="Subject Color"
+                name="color"
+                value={editingSubject?.color || subjectColor}
+                onChange={setSubjectColor}
+              />
+              <Button 
+                type="submit" 
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200"
+              >
+                {editingSubject ? 'Update Subject' : 'Create Subject'}
               </Button>
             </form>
           </DialogContent>
@@ -334,16 +351,22 @@ const Timetable = () => {
         
         <Dialog open={timeSlotDialogOpen} onOpenChange={setTimeSlotDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline">
+            <Button 
+              variant="outline" 
+              className="border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 animate-scale-in"
+            >
               <Plus className="mr-2 h-4 w-4" />
               Add Time Slot
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="sm:max-w-md animate-scale-in">
             <DialogHeader>
-              <DialogTitle>Add Time Slot</DialogTitle>
+              <DialogTitle className="flex items-center gap-2 text-slate-900">
+                <Plus className="h-5 w-5 text-slate-600" />
+                Create Time Slot
+              </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleAddTimeSlot} className="space-y-4">
+            <form onSubmit={handleAddTimeSlot} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <TimePicker 
                   label="Start Time"
@@ -360,7 +383,12 @@ const Timetable = () => {
                   required
                 />
               </div>
-              <Button type="submit">Add Time Slot</Button>
+              <Button 
+                type="submit" 
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200"
+              >
+                Create Time Slot
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -373,70 +401,99 @@ const Timetable = () => {
             }
             setIsCombineMode(!isCombineMode)
           }}
+          className={isCombineMode 
+            ? "bg-amber-600 hover:bg-amber-700 text-white transition-all duration-200 animate-scale-in" 
+            : "border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 transition-all duration-200 animate-scale-in"
+          }
         >
           <Combine className="mr-2 h-4 w-4" />
           {isCombineMode ? 'Cancel Combine' : 'Combine Slots'}
         </Button>
         
         {isCombineMode && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full">
-            <p className="text-blue-700 text-sm mb-2">
-              <strong>Combine Mode Active:</strong> Click on slots with the same subject to select them for combining. 
-              Only adjacent slots from the same day with the same subject can be combined.
-            </p>
-            {selectedSlots.length > 0 && (
-              <div className="flex items-center justify-between">
-                <p className="text-blue-600 text-xs">
-                  {selectedSlots.length} slot(s) selected
-                </p>
-                <Button 
-                  onClick={handleCombineSlots} 
-                  disabled={selectedSlots.length < 2}
-                  size="sm"
-                >
-                  <Combine className="mr-2 h-4 w-4" />
-                  Combine Selected ({selectedSlots.length})
-                </Button>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 w-full animate-slide-up">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Combine className="h-4 w-4 text-white" />
               </div>
-            )}
+              <div className="flex-1">
+                <h3 className="font-medium text-amber-900 mb-1">Combine Mode Active</h3>
+                <p className="text-amber-700 text-sm leading-relaxed">
+                  Click on slots with the same subject to select them for combining. 
+                  Only adjacent slots from the same day with the same subject can be combined.
+                </p>
+                {selectedSlots.length > 0 && (
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-amber-200">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full animate-float"></div>
+                      <span className="text-amber-700 text-sm font-medium">
+                        {selectedSlots.length} slot{selectedSlots.length !== 1 ? 's' : ''} selected
+                      </span>
+                    </div>
+                    <Button 
+                      onClick={handleCombineSlots} 
+                      disabled={selectedSlots.length < 2}
+                      size="sm"
+                      className="bg-amber-600 hover:bg-amber-700 text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Combine className="mr-2 h-4 w-4" />
+                      Combine Selected ({selectedSlots.length})
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
       
-      <div className="overflow-x-auto">
+      <div className="bg-white rounded-lg shadow-elegant border border-slate-200 overflow-hidden animate-fade-in">
         {sortedTimeSlots.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg bg-gray-50">
-            <p className="text-gray-500 mb-4">No time slots added yet</p>
+          <div className="text-center py-16 px-8">
+            <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Plus className="h-8 w-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-medium text-slate-900 mb-2">No time slots yet</h3>
+            <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+              Get started by creating your first time slot to organize your schedule
+            </p>
             <Button 
               onClick={() => setTimeSlotDialogOpen(true)}
-              variant="outline"
+              className="bg-slate-900 hover:bg-slate-800 text-white transition-all duration-200"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Your First Time Slot
+              Create First Time Slot
             </Button>
           </div>
         ) : (
-          <table className="w-full border-collapse">
-            <thead>
-              <tr>
-                <th className="border p-2 w-32">Time</th>
-                {days.map(day => (
-                  <th key={day} className="border p-2">{day}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedTimeSlots.map(timeSlot => (
-                <tr key={timeSlot.id}>
-                  <td className="border p-2 text-center font-mono group relative">
-                    {timeSlot.startTime} - {timeSlot.endTime}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-slate-900 w-32">
+                    Time
+                  </th>
+                  {days.map(day => (
+                    <th key={day} className="px-6 py-4 text-center text-sm font-medium text-slate-900">
+                      {day}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+              {sortedTimeSlots.map((timeSlot, index) => (
+                <tr key={timeSlot.id} className="hover:bg-slate-50/50 transition-colors duration-150">
+                  <td className="px-6 py-4 text-center font-mono group relative bg-slate-50/30">
+                    <div className="text-sm font-medium text-slate-900">
+                      {timeSlot.startTime} - {timeSlot.endTime}
+                    </div>
                     
                     {/* Delete time slot button - shows on hover */}
-                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <Button 
                         size="icon" 
                         variant="ghost" 
-                        className="h-6 w-6 bg-white/80 hover:bg-red-50"
+                        className="h-6 w-6 bg-white hover:bg-red-50 border border-red-200 hover:border-red-300"
                         onClick={() => handleDeleteTimeSlot(timeSlot.id)}
                         title="Delete this time slot"
                       >
@@ -461,42 +518,52 @@ const Timetable = () => {
                     return (
                       <td 
                         key={`${timeSlot.id}-${day}`} 
-                        className={`border p-2 h-16 relative ${
+                        className={`px-6 py-4 h-20 relative transition-all duration-200 ${
                           isCombineMode && daySlot?.subjectId ? 'cursor-pointer' : ''
                         } ${
-                          isSelected ? 'ring-2 ring-blue-500' : ''
-                        } ${isCombineMode && daySlot?.subjectId ? 'hover:bg-gray-100' : ''}
-                        ${combinedSlot ? 'bg-green-50' : ''}`}
+                          isSelected ? 'ring-2 ring-blue-400 ring-inset bg-blue-50' : ''
+                        } ${isCombineMode && daySlot?.subjectId ? 'hover:bg-blue-50/50' : ''}
+                        ${combinedSlot ? 'bg-green-50 border-l-4 border-green-400' : 'border-l border-slate-100'}
+                        group`}
                         rowSpan={rowSpan}
                         onClick={() => daySlot?.subjectId && handleCellClick(timeSlot.id, day)}
                       >
                         {subject && !isCombineMode && (
                           <div 
-                            className="absolute inset-0 flex items-center justify-center p-1 group"
-                            style={{ backgroundColor: `${subject.color}20` }}
+                            className="absolute inset-0 flex items-center justify-center p-3 group/cell rounded-md m-1 border border-slate-200 transform-gpu transition-all duration-200 group-hover/cell:scale-105"
+                            style={{ 
+                              backgroundColor: `${subject.color}10`,
+                              borderColor: `${subject.color}40`
+                            }}
                           >
-                            <span className="text-xs font-medium text-center">
-                              {subject.name}
+                            <div className="text-center">
+                              <div 
+                                className="text-sm font-medium mb-1"
+                                style={{ color: subject.color }}
+                              >
+                                {subject.name}
+                              </div>
                               {combinedSlot && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Combined
+                                <div className="flex items-center justify-center gap-1">
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                  <span className="text-xs text-green-700 font-medium">Combined</span>
                                 </div>
                               )}
-                            </span>
+                            </div>
                             
                             {/* Remove subject button */}
-                            <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute top-1 left-1 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200">
                               <Button 
                                 size="icon" 
                                 variant="ghost" 
-                                className="h-5 w-5 bg-white/80 hover:bg-white"
+                                className="h-5 w-5 bg-white hover:bg-white border border-slate-200"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   assignSubjectToSlot(timeSlot.id, day, undefined)
                                 }}
                                 title="Remove subject"
                               >
-                                <X className="h-3 w-3" />
+                                <X className="h-3 w-3 text-slate-600" />
                               </Button>
                             </div>
                           </div>
@@ -504,32 +571,42 @@ const Timetable = () => {
                         
                         {subject && isCombineMode && (
                           <div 
-                            className="absolute inset-0 flex items-center justify-center p-1"
-                            style={{ backgroundColor: `${subject.color}20` }}
+                            className="absolute inset-0 flex items-center justify-center p-3 rounded-md m-1 border border-slate-200 transform-gpu transition-all duration-200 group-hover/cell:scale-105"
+                            style={{ 
+                              backgroundColor: `${subject.color}10`,
+                              borderColor: `${subject.color}40`
+                            }}
                           >
-                            <span className="text-xs font-medium text-center">
-                              {subject.name}
+                            <div className="text-center">
+                              <div 
+                                className="text-sm font-medium mb-1"
+                                style={{ color: subject.color }}
+                              >
+                                {subject.name}
+                              </div>
                               {combinedSlot && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  Combined
+                                <div className="flex items-center justify-center gap-1">
+                                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                                  <span className="text-xs text-green-700 font-medium">Combined</span>
                                 </div>
                               )}
-                            </span>
+                            </div>
                           </div>
                         )}
                         
                         {combinedSlot && !isCombineMode && (
-                          <div className="absolute top-1 right-1">
+                          <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
                             <Button 
                               size="icon" 
                               variant="ghost" 
-                              className="h-6 w-6"
+                              className="h-5 w-5 bg-white hover:bg-white border border-slate-200"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleUncombineSlot(combinedSlot.id)
                               }}
+                              title="Uncombine slots"
                             >
-                              <Split className="h-3 w-3" />
+                              <Split className="h-3 w-3 text-slate-600" />
                             </Button>
                           </div>
                         )}
@@ -541,14 +618,20 @@ const Timetable = () => {
                                 assignSubjectToSlot(timeSlot.id, day, value === 'none' ? undefined : value)
                               }
                             >
-                              <SelectTrigger className="h-8 w-28 text-xs">
-                                <SelectValue placeholder="Add subject" />
+                              <SelectTrigger className="h-10 w-32 text-xs border-2 border-dashed border-slate-300 hover:border-slate-400 transition-colors duration-200 bg-white">
+                                <SelectValue placeholder="+ Add subject" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem value="none" className="text-slate-500">None</SelectItem>
                                 {subjects.map(subject => (
                                   <SelectItem key={subject.id} value={subject.id}>
-                                    {subject.name}
+                                    <div className="flex items-center gap-2">
+                                      <div 
+                                        className="w-3 h-3 rounded-full" 
+                                        style={{ backgroundColor: subject.color }}
+                                      />
+                                      {subject.name}
+                                    </div>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -558,20 +641,26 @@ const Timetable = () => {
                         
                         {/* Replace subject dropdown for existing subjects */}
                         {subject && !isCombineMode && !combinedSlot && (
-                          <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="absolute bottom-1 right-1 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-200">
                             <Select 
                               onValueChange={(value) => 
                                 assignSubjectToSlot(timeSlot.id, day, value === 'none' ? undefined : value)
                               }
                             >
-                              <SelectTrigger className="h-6 w-6 p-0 text-xs bg-white/80 hover:bg-white">
-                                <Edit2 className="h-3 w-3" />
+                              <SelectTrigger className="h-6 w-6 p-0 text-xs bg-white hover:bg-white border border-slate-200">
+                                <Edit2 className="h-3 w-3 text-slate-600" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="none">Remove Subject</SelectItem>
+                                <SelectItem value="none" className="text-red-600">Remove Subject</SelectItem>
                                 {subjects.map(subj => (
                                   <SelectItem key={subj.id} value={subj.id}>
-                                    {subj.name}
+                                    <div className="flex items-center gap-2">
+                                      <div 
+                                        className="w-3 h-3 rounded-full" 
+                                        style={{ backgroundColor: subj.color }}
+                                      />
+                                      {subj.name}
+                                    </div>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -583,71 +672,103 @@ const Timetable = () => {
                   }).filter(Boolean)}
                 </tr>
               ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
       
-      <div className="mt-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Subjects</h2>
-          <p className="text-sm text-gray-600">
-            Create subjects to assign to your time slots
-          </p>
+      {/* Subjects Section */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="px-8 py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                  <Palette className="h-4 w-4 text-white" />
+                </div>
+                Your Subjects
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Manage your subjects and their colors
+              </p>
+            </div>
+          </div>
         </div>
-        {subjects.length === 0 ? (
-          <div className="text-center py-8 border rounded-lg bg-gray-50">
-            <p className="text-gray-500 mb-4">No subjects created yet</p>
-            <Button 
-              onClick={() => {
-                setEditingSubject(null)
-                setSubjectColor('#3b82f6')
-                setSubjectDialogOpen(true)
-              }}
-              variant="outline"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Your First Subject
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {subjects.map(subject => (
-              <div 
-                key={subject.id} 
-                className="border rounded-lg p-4 flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{ backgroundColor: subject.color }}
-                  />
-                  <span>{subject.name}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => {
-                      setEditingSubject(subject)
-                      setSubjectColor(subject.color)
-                      setSubjectDialogOpen(true)
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive"
-                    onClick={() => handleDeleteSubject(subject.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
+        
+        <div className="p-8">
+          {subjects.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Palette className="h-8 w-8 text-purple-600" />
               </div>
-            ))}
-          </div>
-        )}
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No subjects yet</h3>
+              <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                Create your first subject to start organizing your timetable
+              </p>
+              <Button 
+                onClick={() => {
+                  setEditingSubject(null)
+                  setSubjectColor('#334155')
+                  setSubjectDialogOpen(true)
+                }}
+                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Subject
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {subjects.map(subject => (
+                <div 
+                  key={subject.id} 
+                  className="group relative bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200 hover:border-gray-300"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div 
+                        className="w-12 h-12 rounded-xl shadow-md flex items-center justify-center"
+                        style={{ backgroundColor: subject.color }}
+                      >
+                        <span className="text-white font-bold text-lg">
+                          {subject.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 text-lg">{subject.name}</h3>
+                        <p className="text-sm text-gray-500 font-mono">{subject.color}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setEditingSubject(subject)
+                          setSubjectColor(subject.color)
+                          setSubjectDialogOpen(true)
+                        }}
+                        className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleDeleteSubject(subject.id)}
+                        className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Confirmation Dialogs */}
@@ -683,13 +804,25 @@ const Timetable = () => {
       
       {/* Alert Dialog */}
       <Dialog open={showAlertDialog.show} onOpenChange={(open) => setShowAlertDialog({show: open, title: '', message: ''})}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{showAlertDialog.title}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-600">{showAlertDialog.message}</p>
-          <div className="flex justify-end mt-4">
-            <Button onClick={() => setShowAlertDialog({show: false, title: '', message: ''})}>
+        <DialogContent className="sm:max-w-md overflow-hidden">
+          <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 -m-6 mb-4">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3 text-lg">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Info className="h-4 w-4 text-blue-600" />
+                </div>
+                {showAlertDialog.title}
+              </DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="px-6 pb-2">
+            <p className="text-sm text-gray-600 leading-relaxed">{showAlertDialog.message}</p>
+          </div>
+          <div className="flex justify-end px-6 pb-6 pt-4">
+            <Button 
+              onClick={() => setShowAlertDialog({show: false, title: '', message: ''})}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+            >
               OK
             </Button>
           </div>
