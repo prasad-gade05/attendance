@@ -11,22 +11,22 @@ interface ColorPickerProps {
 }
 
 const predefinedColors = [
-  { color: '#334155', name: 'Slate' },
-  { color: '#374151', name: 'Gray' },
-  { color: '#1f2937', name: 'Dark Gray' },
-  { color: '#dc2626', name: 'Red' },
-  { color: '#ea580c', name: 'Orange' },
-  { color: '#ca8a04', name: 'Yellow' },
-  { color: '#16a34a', name: 'Green' },
-  { color: '#0891b2', name: 'Cyan' },
-  { color: '#2563eb', name: 'Blue' },
-  { color: '#7c3aed', name: 'Purple' },
+  { color: '#475569', name: 'Slate' },
+  { color: '#4b5563', name: 'Gray' },
+  { color: '#374151', name: 'Dark Gray' },
+  { color: '#b91c1c', name: 'Red' },
+  { color: '#c2410c', name: 'Orange' },
+  { color: '#a16207', name: 'Yellow' },
+  { color: '#15803d', name: 'Green' },
+  { color: '#0e7490', name: 'Cyan' },
+  { color: '#1d4ed8', name: 'Blue' },
+  { color: '#6d28d9', name: 'Purple' },
 ]
 
 const ColorPicker: React.FC<ColorPickerProps> = ({
   label,
   name,
-  value = '#334155',
+  value = '#475569',
   onChange
 }) => {
   const [customColor, setCustomColor] = useState(value)
@@ -47,22 +47,22 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   }
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <Label htmlFor={name} className="flex items-center gap-2 text-sm font-medium text-slate-700">
-        <Palette className="h-4 w-4 text-slate-500" />
+    <div className="space-y-3">
+      <Label htmlFor={name} className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <Palette className="h-4 w-4 text-muted-foreground" />
         {label}
       </Label>
       
       {/* Predefined Colors */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-5 gap-2">
         {predefinedColors.map(({ color, name: colorName }) => (
           <button
             key={color}
             type="button"
-            className={`group relative w-10 h-10 rounded-lg border-2 transition-all duration-200 hover:scale-105 animate-scale-in ${
+            className={`group relative w-full aspect-square rounded-md border transition-all duration-200 ${ 
               value === color 
-                ? 'border-slate-400 ring-2 ring-slate-200 shadow-md' 
-                : 'border-slate-200 hover:border-slate-300'
+                ? 'border-ring ring-2 ring-ring/50'
+                : 'border-border hover:border-muted-foreground'
             }`}
             style={{ backgroundColor: color }}
             onClick={() => handlePredefinedColorClick(color)}
@@ -70,7 +70,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
           >
             {value === color && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Check className="h-4 w-4 text-white drop-shadow-sm animate-scale-in" />
+                <Check className="h-4 w-4 text-white" />
               </div>
             )}
           </button>
@@ -79,7 +79,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
       
       {/* Custom Hex Input */}
       <div className="space-y-2">
-        <Label htmlFor={`${name}-custom`} className="text-xs text-slate-600 font-medium">
+        <Label htmlFor={`${name}-custom`} className="text-xs text-muted-foreground font-medium">
           Custom Color (Hex)
         </Label>
         <div className="relative">
@@ -87,14 +87,14 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             id={`${name}-custom`}
             name={name}
             type="text"
-            placeholder="#334155"
+            placeholder="#475569"
             value={customColor}
             onChange={handleCustomColorChange}
-            className="font-mono text-sm pl-10 transition-all duration-200 focus:ring-2 focus:ring-slate-400/20 border-slate-200"
+            className="font-mono text-sm pl-10 border-border"
             pattern="^#[0-9A-Fa-f]{6}$"
           />
           <div 
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded border border-slate-300"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded border border-muted-foreground/50"
             style={{ backgroundColor: customColor }}
           />
         </div>
@@ -102,5 +102,4 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
     </div>
   )
 }
-
 export default ColorPicker

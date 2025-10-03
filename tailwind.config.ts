@@ -99,10 +99,88 @@ export default {
             height: "0",
           },
         },
+        fadeIn: {
+          from: {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        slideUp: {
+          from: {
+            opacity: "0",
+            transform: "translateY(30px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        scaleIn: {
+          from: {
+            opacity: "0",
+            transform: "scale(0.9)",
+          },
+          to: {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
+        float: {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-6px)",
+          },
+        },
+        bounceSubtle: {
+          "0%, 100%": {
+            transform: "translateY(0px)",
+          },
+          "50%": {
+            transform: "translateY(-3px)",
+          },
+        },
+        pulseGentle: {
+          "0%, 100%": {
+            opacity: "1",
+          },
+          "50%": {
+            opacity: "0.8",
+          },
+        },
+        rotateSlow: {
+          from: {
+            transform: "rotate(0deg)",
+          },
+          to: {
+            transform: "rotate(360deg)",
+          },
+        },
+        glow: {
+          from: {
+            boxShadow: "0 0 5px rgba(59, 130, 246, 0.4)",
+          },
+          to: {
+            boxShadow: "0 0 20px rgba(59, 130, 246, 0.6)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fadeIn 0.6s ease-out forwards",
+        "slide-up": "slideUp 0.5s ease-out forwards",
+        "scale-in": "scaleIn 0.3s ease-out forwards",
+        "float": "float 3s ease-in-out infinite",
+        "bounce-subtle": "bounceSubtle 2s ease-in-out infinite",
+        "pulse-gentle": "pulseGentle 2s ease-in-out infinite",
+        "rotate-slow": "rotateSlow 8s linear infinite",
+        "glow": "glow 2s ease-in-out infinite alternate",
       },
     },
   },

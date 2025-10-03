@@ -7,9 +7,10 @@ import './App.css'
 function App() {
   return (
     <TimetableProvider>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background relative">
+        
         <Header />
-        <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in">
+        <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in relative z-10">
           <Timetable />
         </main>
       </div>
