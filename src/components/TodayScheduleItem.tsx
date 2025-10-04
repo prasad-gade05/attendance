@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { Clock, Check, X, AlertTriangle, Edit, Trash2 } from 'lucide-react'
 import { Card, CardContent } from './ui/card'
@@ -40,9 +40,37 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
     attendance?.status || 'attended'
   )
   const [isVerified, setIsVerified] = useState(attendance?.isVerified || false)
+  const [hasAutoSaved, setHasAutoSaved] = useState(false) // Track if we've auto-saved
 
-  const { subjects } = useTimetable()
+  const { subjects, timeSlots } = useTimetable() // Also get timeSlots
   const { markAttendance, updateAttendance, removeExtraClass } = useSchedule()
+
+  // Auto-save default attendance status when component mounts and there's no existing attendance
+  useEffect(() => {
+    const autoSaveDefaultAttendance = async () => {
+      // Only auto-save if this is a new item (no existing attendance), we haven't auto-saved yet,
+      // and we have the required data
+      if (!attendance && !hasAutoSaved && subject && timeSlot && daySlot) {
+        const attendanceData = {
+          date,
+          timeSlotId: timeSlot.id,
+          originalSubjectId: subject.id,
+          actualSubjectId: subject.id,
+          status: 'attended' as 'attended', // Default to attended with correct type
+          isVerified: false
+        }
+
+        try {
+          await markAttendance(attendanceData)
+          setHasAutoSaved(true) // Mark that we've auto-saved
+        } catch (error) {
+          console.error('Failed to auto-save default attendance:', error)
+        }
+      }
+    }
+
+    autoSaveDefaultAttendance()
+  }, [attendance, hasAutoSaved, subject, timeSlot, daySlot, date, markAttendance])
 
   const handleSaveAttendance = async () => {
     const attendanceData = {
@@ -109,7 +137,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   const getTimeRange = () => {
     if (isCombined && combinedSlots) {
       const allTimeSlots = combinedSlots
-        .map(cs => subjects.find(s => s.id === cs.timeSlotId))
+        .map(cs => timeSlots.find(ts => ts.id === cs.timeSlotId))
         .filter(Boolean)
         .sort((a, b) => a!.startTime.localeCompare(b!.startTime))
       
