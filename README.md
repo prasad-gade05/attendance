@@ -1,69 +1,44 @@
-# Modern React App Template
+# TimeFlow - Smart Schedule Management
 
-A cutting-edge, production-ready React application template built with modern web technologies. This template provides a comprehensive foundation for building sophisticated web applications with beautiful UI components, smooth animations, and excellent developer experience.
+A comprehensive timetable and attendance management application built with React, TypeScript, and IndexedDB for persistent storage. Features both timetable creation and daily schedule tracking with attendance monitoring.
 
 ## ✨ Features
 
-### 🎨 **Modern Design System**
+### 📅 **Timetable Management**
+- **Visual Timetable**: Interactive weekly grid with time slots and subjects
+- **Subject Management**: Add, edit, delete subjects with custom colors
+- **Time Slot Management**: Flexible time slots with precise timing
+- **Slot Combination**: Combine multiple time slots for longer sessions
+- **Persistent Storage**: Local storage using IndexedDB
 
-- **Beautiful UI Components**: Complete shadcn/ui component library with 20+ components
-- **Gradient Aesthetics**: Modern gradient backgrounds, text effects, and glass-morphism
-- **Dark/Light Themes**: Seamless theme switching with system preference detection
-- **Responsive Design**: Mobile-first approach with fluid layouts across all devices
-- **Accessibility**: WCAG compliant components with proper ARIA attributes
+### 📋 **Today's Schedule**
+- **Daily Schedule View**: See all lectures for any selected day
+- **Calendar Navigation**: Pick any date to view its schedule
+- **Attendance Tracking**: Mark lectures as attended/missed/cancelled
+- **Subject Verification**: Confirm or change the actual subject taught
+- **Holiday/Exam Management**: Mark dates as holidays or exam days
+- **Extra Classes**: Add additional classes for specific dates
+- **Term Settings**: Define term start/end dates for accurate calculations
 
-### 🚀 **Advanced Functionality**
+### 📊 **Advanced Features**
+- **Attendance Statistics**: Comprehensive stats by subject and overall
+- **Smart Calculations**: Automatic calculation of total lectures from term start
+- **Holiday Exclusion**: Holidays and exam days excluded from calculations
+- **Subject Changes**: Track when different subjects were taught than scheduled
+- **Progress Tracking**: Visual progress bars and percentage calculations
 
-- **Interactive Calendar**: Full-featured calendar component with date selection
-- **Date & Time Pickers**: Multiple date/time picker variants (12h/24h, range selection)
-- **Smooth Animations**: Framer Motion powered animations and micro-interactions
-- **Navigation System**: Modern navbar with active indicators and mobile menu
-- **Form Components**: Enhanced form inputs with validation-ready styling
-
-### 💻 **Developer Experience**
-
-- **TypeScript**: Full type safety with strict TypeScript configuration
-- **Modern Build Tools**: Vite for lightning-fast development and optimized builds
-- **Code Quality**: ESLint and Prettier configured for consistent code style
-- **Path Aliases**: Clean imports with `@/` alias configuration
-- **Hot Module Replacement**: Instant updates during development
-
-### 🛠 **Production Ready**
-
-- **Optimized Performance**: Tree-shaking, code splitting, and modern bundling
-- **SEO Friendly**: Proper meta tags and semantic HTML structure
-- **GitHub Pages**: Pre-configured deployment workflow
-- **Progressive Enhancement**: Works without JavaScript for core functionality
-
-## 🚀 Tech Stack
-
-| Technology                                      | Version | Purpose        |
-| ----------------------------------------------- | ------- | -------------- |
-| [React](https://react.dev/)                     | 19.1.1  | UI Framework   |
-| [TypeScript](https://www.typescriptlang.org/)   | 5.5.3   | Type Safety    |
-| [Vite](https://vitejs.dev/)                     | 5.4.1   | Build Tool     |
-| [Tailwind CSS](https://tailwindcss.com/)        | 3.4.11  | Styling        |
-| [shadcn/ui](https://ui.shadcn.com/)             | Latest  | UI Components  |
-| [Framer Motion](https://www.framer.com/motion/) | 11.0.0  | Animations     |
-| [React Router](https://reactrouter.com/)        | 6.26.2  | Routing        |
-| [Lucide React](https://lucide.dev/)             | 0.462.0 | Icons          |
-| [date-fns](https://date-fns.org/)               | 3.6.0   | Date Utilities |
-
-## 🏁 Quick Start
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-- **pnpm** (recommended) - [Install](https://pnpm.io/installation)
+- Node.js (v18 or higher)
+- pnpm (recommended) or npm
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/prasad-gade05/app_template.git
-
-# Navigate to project directory
-cd app_template
+git clone <repository-url>
+cd attend20
 
 # Install dependencies
 pnpm install
@@ -82,265 +57,274 @@ The application will be available at `http://localhost:5173`
 | `pnpm build`   | Build for production              |
 | `pnpm preview` | Preview production build locally  |
 | `pnpm lint`    | Run ESLint for code quality       |
-| `pnpm deploy`  | Deploy to GitHub Pages            |
 
-## 📁 Project Structure
+## 📱 Usage Guide
 
-```
-app_template/
-├── src/
-│   ├── components/          # Reusable components
-│   │   ├── ui/             # shadcn/ui components
-│   │   │   ├── button.tsx  # Button variations
-│   │   │   ├── card.tsx    # Card layouts
-│   │   │   ├── calendar.tsx # Calendar component
-│   │   │   ├── date-picker.tsx # Date selection
-│   │   │   ├── time-picker.tsx # Time selection
-│   │   │   └── ...         # 15+ more components
-│   │   ├── navbar.tsx      # Navigation component
-│   │   ├── footer.tsx      # Footer component
-│   │   └── theme-provider.tsx # Theme management
-│   ├── pages/              # Route components
-│   │   ├── Index.tsx       # Homepage
-│   │   ├── About.tsx       # About page
-│   │   ├── Components.tsx  # Component showcase
-│   │   └── Contact.tsx     # Contact form
-│   ├── lib/                # Utility functions
-│   │   └── utils.ts        # Helper utilities
-│   ├── hooks/              # Custom React hooks
-│   ├── assets/             # Static assets
-│   ├── App.tsx             # Main app component
-│   ├── main.tsx            # Entry point
-│   └── index.css           # Global styles
-├── public/                 # Public assets
-├── docs/                   # Documentation
-└── package.json           # Dependencies & scripts
-```
+### Setting Up Your Timetable
 
-## 🎨 Component Library
+1. **Add Subjects**
+   - Click "Add Subject" button
+   - Enter subject name and choose a color
+   - Subjects will be available for scheduling
 
-### Basic Components
+2. **Create Time Slots**
+   - Click "Add Time Slot"
+   - Set start and end times
+   - Time slots create the grid structure
 
-- **Button**: 5 variants, 4 sizes, with hover animations
-- **Card**: Header, content, footer sections with gradient effects
-- **Input/Textarea**: Form inputs with focus animations
-- **Badge**: Status indicators with multiple variants
-- **Avatar**: Profile pictures with fallback support
+3. **Assign Subjects to Slots**
+   - Click on any cell in the timetable
+   - Select a subject from the dropdown
+   - The cell will display the subject with its color
 
-### Advanced Components
+4. **Combine Time Slots**
+   - Click "Combine Slots" to enter combination mode
+   - Select multiple adjacent slots on the same day
+   - Combine them for longer lecture sessions
 
-- **Calendar**: Interactive month/year navigation
-- **Date Picker**: Single date and range selection
-- **Time Picker**: 12h/24h formats with seconds precision
-- **Progress**: Animated progress bars
-- **Switch**: Toggle controls with smooth transitions
-- **Tabs**: Organized content sections
-- **Alert Dialog**: Modal confirmations
+### Using Today's Schedule
 
-### Navigation
+1. **Set Term Dates**
+   - Click "Term Settings" button
+   - Set your academic term start and end dates
+   - Only dates within the term will show schedules
 
-- **Navbar**: Responsive navigation with mobile menu
-- **Footer**: Comprehensive footer with links
-- **Theme Toggle**: Dark/light/system theme switching
+2. **Navigate to Schedule**
+   - Click "Today's Schedule" in the header
+   - Use the calendar to select any date
+   - View all lectures scheduled for that day
 
-## 🎯 Page Templates
+3. **Mark Attendance**
+   - For each lecture, choose: Attended/Missed/Cancelled
+   - Verify the actual subject taught (if different from scheduled)
+   - Changes are automatically saved
 
-### 🏠 Homepage (`/`)
+4. **Manage Special Dates**
+   - Mark dates as holidays or exam days
+   - Special dates won't show any schedule
+   - Excluded from attendance calculations
 
-- Hero section with animated gradient background
-- Feature showcase with hover effects
-- Call-to-action sections
-- Floating animated elements
+5. **Add Extra Classes**
+   - Click "Add Extra Class" for additional sessions
+   - Choose time slot and subject
+   - Separate from regular timetable
 
-### ℹ️ About (`/about`)
+6. **View Statistics**
+   - Click "Stats" to see attendance analytics
+   - Overall and subject-wise attendance percentages
+   - Total lectures conducted vs attended
 
-- Technology stack overview
-- Project structure explanation
-- Getting started guide
-- Feature highlights
+## 🏗️ Technical Architecture
 
-### 🧩 Components (`/components`)
+### Tech Stack
 
-- Interactive component demonstrations
-- Organized in tabbed sections
-- Live code examples
-- Real-time property changes
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19.1.1 | UI Framework |
+| TypeScript | 5.5.3 | Type Safety |
+| Vite | 5.4.1 | Build Tool |
+| Tailwind CSS | 3.4.11 | Styling |
+| Dexie.js | 4.2.0 | IndexedDB ORM |
+| React Router | 6.26.2 | Navigation |
+| date-fns | 3.6.0 | Date Utilities |
+| shadcn/ui | Latest | UI Components |
 
-### 📧 Contact (`/contact`)
+### Data Models
 
-- Contact form with validation styling
-- Project information cards
-- Quick start commands
-- Social links
+#### Core Entities
+```typescript
+interface Subject {
+  id: string
+  name: string
+  color: string
+}
 
-## 🎨 Customization
+interface TimeSlot {
+  id: string
+  startTime: string
+  endTime: string
+}
 
-### Theme Configuration
-
-The template uses CSS custom properties for theming:
-
-```css
-:root {
-  --primary: 221.2 83.2% 53.3%;
-  --secondary: 210 40% 96%;
-  --accent: 210 40% 94%;
-  /* ... */
+interface DaySlot {
+  id: string
+  timeSlotId: string
+  day: string
+  subjectId?: string
 }
 ```
 
-### Adding Components
+#### Schedule & Attendance
+```typescript
+interface AttendanceRecord {
+  id: string
+  date: string
+  timeSlotId: string
+  originalSubjectId?: string
+  actualSubjectId?: string
+  status: 'attended' | 'missed' | 'cancelled'
+  isVerified: boolean
+}
 
-1. Create component in `src/components/ui/`
-2. Export from the appropriate index file
-3. Add to the Components showcase page
-4. Update documentation
+interface SpecialDate {
+  id: string
+  date: string
+  type: 'holiday' | 'exam'
+  description?: string
+}
 
-### Styling Guidelines
-
-- Use Tailwind utility classes
-- Leverage CSS custom properties for themes
-- Add animations with Framer Motion
-- Maintain responsive design principles
-
-## 🚀 Deployment
-
-### GitHub Pages (Recommended)
-
-```bash
-# Build and deploy
-pnpm deploy
+interface ExtraClass {
+  id: string
+  date: string
+  timeSlotId: string
+  subjectId: string
+  description?: string
+}
 ```
-
-### Other Platforms
-
-- **Vercel**: Connect GitHub repository
-- **Netlify**: Drag & drop `dist` folder
-- **Cloudflare Pages**: Connect GitHub repository
-
-### Development Workflow
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes
-4. Run tests: `pnpm lint && pnpm build`
-5. Commit changes: `git commit -m 'Add amazing feature'`
-6. Push to branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
-
-```
-# Timetable Manager
-
-A modern, responsive timetable application built with React, TypeScript, and IndexedDB for persistent storage.
-
-## Features
-
-- **Visual Timetable**: Columns for Monday to Sunday, rows for time slots
-- **Subject Management**: Add, edit, and delete subjects with custom colors
-- **Time Slot Management**: Add, edit, and delete time slots with flexible timing
-- **Slot Combination**: Combine multiple time slots from the same day into a single cell
-- **Persistent Storage**: All data stored locally in the browser using IndexedDB
-- **Data Management**: Clear all data with a single button
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (version 14 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. Open your browser to `http://localhost:5173`
-
-## Usage
-
-### Adding Subjects
-
-1. Click the "Add Subject" button
-2. Enter the subject name and select a color
-3. Click "Add Subject"
-
-### Adding Time Slots
-
-1. Click the "Add Time Slot" button
-2. Select the day, start time, end time, and optionally a subject
-3. Click "Add Time Slot"
-
-### Combining Slots
-
-1. Click the "Combine Slots" button to enter combination mode
-2. Click on multiple time slots from the same day to select them
-3. Click the "Combine Selected" button to combine the slots
-
-### Uncombining Slots
-
-1. Click the split icon on a combined slot to uncombine it
-
-### Managing Data
-
-- Edit or delete subjects and time slots using the buttons in each item
-- Clear all data using the "Clear All Data" button in the header
-
-## Technical Details
-
-### Technologies Used
-
-- React with TypeScript
-- IndexedDB for client-side storage (via Dexie.js)
-- Tailwind CSS for styling
-- shadcn/ui components
-- Lucide React icons
 
 ### Project Structure
 
 ```
 src/
 ├── components/
-│   ├── Timetable.tsx
-│   ├── Header.tsx
-│   └── ui/ (shadcn/ui components)
+│   ├── TodaySchedule.tsx       # Main schedule page
+│   ├── TodayScheduleItem.tsx   # Individual lecture item
+│   ├── ExtraClassDialog.tsx    # Add extra classes
+│   ├── TermSettingsDialog.tsx  # Term configuration
+│   ├── AttendanceStatsPanel.tsx # Statistics view
+│   ├── Timetable.tsx           # Timetable grid
+│   ├── Header.tsx              # Navigation header
+│   └── ui/                     # Reusable UI components
 ├── hooks/
-│   └── useTimetable.tsx
+│   ├── useTimetable.tsx        # Timetable data management
+│   └── useSchedule.tsx         # Schedule & attendance logic
 ├── lib/
-│   └── db.ts
+│   └── db.ts                   # IndexedDB configuration
 ├── types/
-│   └── index.ts
+│   └── index.ts                # TypeScript definitions
 └── utils/
-    └── utils.ts
+    └── utils.ts                # Utility functions
 ```
 
-### Data Models
+## 📊 Attendance Calculation Logic
 
-- **Subject**: id, name, color
-- **TimeSlot**: id, day, startTime, endTime, subjectId (optional), isCombined, combinedSlots (array of slot IDs)
+### Total Lectures Calculation
 
-## Development
+The system calculates total lectures using this algorithm:
 
-### Available Scripts
+1. **Get all days** in the term period up to today
+2. **Exclude special dates** (holidays/exams)
+3. **Process each day:**
+   - Find scheduled lectures for that day
+   - Handle combined slots (count only once)
+   - Check for attendance records
+   - Account for subject changes
+   - Include extra classes
 
-- `npm run dev` - Start the development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview the production build
+### Example Calculation
 
-## License
+**Scenario:**
+- Subject A: 2 lectures Mon + 2 lectures Tue
+- Subject B: 3 lectures Tue + 2 lectures Wed
+- Term: 3 weeks, completed 2 weeks
 
-This project is licensed under the MIT License.
+**Week 1:** Monday = Holiday, Tuesday = Normal
+- Subject A: 2 lectures (only Tuesday)
+- Subject B: 3 lectures (Tuesday)
+
+**Week 2:** All normal days
+- Subject A: 4 lectures (Mon + Tue)
+- Subject B: 5 lectures (Tue + Wed)
+
+**Total after 2 weeks:**
+- Subject A: 6 lectures
+- Subject B: 8 lectures
+
+### Special Cases Handled
+
+- **Cancelled lectures:** Not counted in total
+- **Subject changes:** Moved to actual subject
+- **Combined slots:** Counted as one lecture
+- **Extra classes:** Added to totals
+- **Outside term:** Ignored completely
+
+## 🎨 UI/UX Features
+
+### Design Principles
+- **Clean Interface:** Minimalist design focused on functionality
+- **Color Coding:** Subjects distinguished by colors
+- **Responsive Layout:** Works on desktop and mobile
+- **Intuitive Navigation:** Clear visual hierarchy
+
+### Interactive Elements
+- **Visual Feedback:** Hover states and animations
+- **Status Indicators:** Color-coded attendance status
+- **Progress Visualization:** Percentage bars and statistics
+- **Modal Dialogs:** For complex operations
+
+### Accessibility
+- **Keyboard Navigation:** Full keyboard support
+- **Screen Reader Friendly:** Proper ARIA labels
+- **Color Contrast:** Meets WCAG guidelines
+- **Focus Management:** Clear focus indicators
+
+## 🚀 Development
+
+### Environment Setup
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Preview production build
+pnpm preview
+```
+
+### Code Quality
+
+- **TypeScript:** Strict type checking
+- **ESLint:** Code quality rules
+- **Prettier:** Code formatting
+- **Tailwind:** Utility-first CSS
+
+### Contributing
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/new-feature`
+3. Make changes and test thoroughly
+4. Commit: `git commit -m 'Add new feature'`
+5. Push: `git push origin feature/new-feature`
+6. Create Pull Request
+
+## 📈 Future Enhancements
+
+### Planned Features
+- **Export/Import:** Backup and restore data
+- **Notifications:** Lecture reminders
+- **Analytics Dashboard:** Advanced reporting
+- **Multi-term Support:** Handle multiple terms
+- **Sync Options:** Cloud synchronization
+- **Mobile App:** React Native version
+
+### Performance Optimizations
+- **Virtual Scrolling:** For large timetables
+- **Caching:** Improved data access
+- **Lazy Loading:** Component optimization
+- **Bundle Splitting:** Faster initial load
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- **shadcn/ui:** Beautiful UI components
+- **Tailwind CSS:** Utility-first CSS framework
+- **Dexie.js:** IndexedDB wrapper
+- **React Router:** Client-side routing
+- **date-fns:** Date utility library
