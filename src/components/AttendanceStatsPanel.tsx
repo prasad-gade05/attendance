@@ -157,9 +157,30 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
             }
           }
           
-          // Extra classes count as both total lectures and attended lectures
-          stats[subjectId].totalLectures++
-          stats[subjectId].attendedLectures++
+          // Check if there's an attendance record for this extra class
+          const attendanceRecord = attendanceRecords.find(ar => 
+            ar.date === extraClass.date && ar.timeSlotId === extraClass.timeSlotId
+          )
+          
+          if (attendanceRecord) {
+            // Use the actual attendance record status
+            if (attendanceRecord.status !== 'cancelled') {
+              stats[subjectId].totalLectures++
+              
+              if (attendanceRecord.status === 'attended') {
+                stats[subjectId].attendedLectures++
+              } else if (attendanceRecord.status === 'missed') {
+                stats[subjectId].missedLectures++
+              }
+            } else {
+              stats[subjectId].cancelledLectures++
+            }
+          } else {
+            // No attendance record - count as total lecture and attended by default
+            // (This matches the behavior in TodayScheduleItem where extra classes default to attended)
+            stats[subjectId].totalLectures++
+            stats[subjectId].attendedLectures++
+          }
         }
       })
 
