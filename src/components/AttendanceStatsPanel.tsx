@@ -28,6 +28,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
   const { 
     attendanceRecords, 
     specialDates, 
+    extraClasses,
     termSettings, 
     getAttendanceStats,
     isDateInTerm 
@@ -37,7 +38,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
     if (open) {
       calculateDetailedStats()
     }
-  }, [open, attendanceRecords, termSettings, specialDates, subjects, timeSlots, daySlots])
+  }, [open, attendanceRecords, termSettings, specialDates, extraClasses, subjects, timeSlots, daySlots])
 
   const calculateDetailedStats = async () => {
     if (!termSettings) return
@@ -138,6 +139,29 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
           }
         }
       }
+
+      // Process extra classes
+      extraClasses.forEach(extraClass => {
+        // Only count extra classes that are within the term
+        if (isDateInTerm(extraClass.date)) {
+          const subjectId = extraClass.subjectId;
+          
+          // Initialize stats for this subject if not already present
+          if (!stats[subjectId]) {
+            stats[subjectId] = {
+              subjectId: subjectId,
+              totalLectures: 0,
+              attendedLectures: 0,
+              missedLectures: 0,
+              cancelledLectures: 0
+            }
+          }
+          
+          // Extra classes count as both total lectures and attended lectures
+          stats[subjectId].totalLectures++
+          stats[subjectId].attendedLectures++
+        }
+      })
 
       setDetailedStats(Object.values(stats).filter(stat => stat.totalLectures > 0))
     } catch (error) {
