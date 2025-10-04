@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Textarea } from './ui/textarea'
 import { useTimetable } from '../hooks/useTimetable'
 import { useSchedule } from '../hooks/useSchedule'
+import { db } from '../lib/db'
 
 interface ExtraClassDialogProps {
   open: boolean
@@ -41,15 +42,19 @@ const ExtraClassDialog: React.FC<ExtraClassDialogProps> = ({
     try {
       let timeSlotId = selectedTimeSlot
 
-      // Create new time slot if needed
+      // Create new time slot if needed (only for extra classes, not for timetable)
       if (!useExistingSlot && newTimeSlot.startTime && newTimeSlot.endTime) {
+        // Generate a unique ID for the extra class time slot
+        timeSlotId = `extra-${Date.now()}`
+        
+        // Create a time slot record directly without affecting the timetable structure
         const newSlot = {
+          id: timeSlotId,
           startTime: newTimeSlot.startTime,
           endTime: newTimeSlot.endTime
         }
-        await addTimeSlot(newSlot)
-        // Use the latest time slot ID (this is a simplified approach)
-        timeSlotId = Date.now().toString()
+        // Save to database directly without creating day slots for all days
+        await db.timeSlots.add(newSlot)
       }
 
       if (!timeSlotId || !selectedSubject) {
@@ -104,6 +109,7 @@ const ExtraClassDialog: React.FC<ExtraClassDialogProps> = ({
                   </SelectTrigger>
                   <SelectContent>
                     {timeSlots
+                      .filter(slot => !slot.id.startsWith('extra-')) // Exclude extra class time slots
                       .sort((a, b) => a.startTime.localeCompare(b.startTime))
                       .map((slot) => (
                         <SelectItem key={slot.id} value={slot.id}>

@@ -66,12 +66,14 @@ const Timetable = () => {
     }
   }, [startTime])
   
-  // Sort time slots by start time
-  const sortedTimeSlots = [...timeSlots].sort((a, b) => {
-    const [aHours, aMinutes] = a.startTime.split(':').map(Number)
-    const [bHours, bMinutes] = b.startTime.split(':').map(Number)
-    return (aHours * 60 + aMinutes) - (bHours * 60 + bMinutes)
-  })
+  // Sort time slots by start time and filter out extra class time slots
+  const sortedTimeSlots = [...timeSlots]
+    .filter(timeSlot => !timeSlot.id.startsWith('extra-')) // Exclude extra class time slots
+    .sort((a, b) => {
+      const [aHours, aMinutes] = a.startTime.split(':').map(Number)
+      const [bHours, bMinutes] = b.startTime.split(':').map(Number)
+      return (aHours * 60 + aMinutes) - (bHours * 60 + bMinutes)
+    })
   
   const handleAddSubject = (e: React.FormEvent) => {
     e.preventDefault()
@@ -107,8 +109,8 @@ const Timetable = () => {
       return
     }
     
-    // Check for overlapping time slots
-    const overlapping = timeSlots.find(slot => {
+    // Check for overlapping time slots (exclude extra class time slots)
+    const overlapping = timeSlots.filter(slot => !slot.id.startsWith('extra-')).find(slot => {
       const [slotStartHour, slotStartMinute] = slot.startTime.split(':').map(Number)
       const [slotEndHour, slotEndMinute] = slot.endTime.split(':').map(Number)
       const slotStartMinutes = slotStartHour * 60 + slotStartMinute

@@ -57,8 +57,9 @@ const TodaySchedule: React.FC = () => {
       combinedSlots?: DaySlot[]
     }> = []
 
-    // Get regular time slots
+    // Get regular time slots (exclude extra class time slots)
     timeSlots
+      .filter(timeSlot => !timeSlot.id.startsWith('extra-')) // Exclude extra class time slots
       .sort((a, b) => a.startTime.localeCompare(b.startTime))
       .forEach(timeSlot => {
         const daySlot = daySlots.find(ds => ds.timeSlotId === timeSlot.id && ds.day === selectedDayName)

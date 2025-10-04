@@ -43,12 +43,23 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [extraClasses, setExtraClasses] = useState<ExtraClass[]>([])
   const [termSettings, setTermSettingsState] = useState<TermSettings | null>(null)
 
+  console.log('🔥 ScheduleProvider: Component rendered, current termSettings state:', termSettings)
+
   useEffect(() => {
+    console.log('🔥 ScheduleProvider: useEffect triggered for loadData')
     loadData()
   }, [])
 
+  useEffect(() => {
+    console.log('🔥 ScheduleProvider: termSettings state changed to:', termSettings)
+  }, [termSettings])
+
   const loadData = async () => {
+    console.log('🔥 useSchedule: loadData called')
     try {
+      console.log('🔥 useSchedule: Loading data from database')
+      
+      // Load all data including a fallback for term settings
       const [
         loadedAttendance,
         loadedSpecialDates,
@@ -58,15 +69,54 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         db.attendanceRecords.toArray(),
         db.specialDates.toArray(),
         db.extraClasses.toArray(),
-        db.termSettings.where('isActive').equals(true).first()
+        db.termSettings.filter(term => term.isActive === true).first()
       ])
+      
+      console.log('🔥 useSchedule: Loaded data:')
+      console.log('🔥 useSchedule: - attendanceRecords:', loadedAttendance?.length || 0)
+      console.log('🔥 useSchedule: - specialDates:', loadedSpecialDates?.length || 0)
+      console.log('🔥 useSchedule: - extraClasses:', loadedExtraClasses?.length || 0)
+      console.log('🔥 useSchedule: - termSettings:', loadedTermSettings)
+      
+      // Fallback: if no active term settings found, get the most recent one
+      let finalTermSettings = loadedTermSettings;
+      if (!finalTermSettings) {
+        console.log('🔥 useSchedule: No active term settings found, checking for any term settings')
+        try {
+          const allTermSettings = await db.termSettings.toArray();
+          console.log('🔥 useSchedule: All term settings in DB:', allTermSettings)
+          
+          if (allTermSettings.length > 0) {
+            // Get the most recently created term settings
+            finalTermSettings = allTermSettings.reduce((mostRecent, current) => {
+              // Handle case where IDs might not be parseable as numbers
+              try {
+                return parseInt(current.id) > parseInt(mostRecent.id) ? current : mostRecent;
+              } catch (e) {
+                // If parsing fails, compare as strings
+                return current.id > mostRecent.id ? current : mostRecent;
+              }
+            });
+            console.log('🔥 useSchedule: Using most recent term settings as fallback:', finalTermSettings)
+          }
+        } catch (dbError) {
+          console.error('🔥 useSchedule: Error fetching term settings from DB:', dbError)
+        }
+      }
       
       setAttendanceRecords(loadedAttendance)
       setSpecialDates(loadedSpecialDates)
       setExtraClasses(loadedExtraClasses)
-      setTermSettingsState(loadedTermSettings || null)
+      setTermSettingsState(finalTermSettings || null)
+      
+      console.log('🔥 useSchedule: State updated successfully, final termSettings:', finalTermSettings)
     } catch (error) {
-      console.error('Failed to load schedule data:', error)
+      console.error('🔥 useSchedule: Failed to load schedule data:', error)
+      // Set default empty state on error
+      setAttendanceRecords([])
+      setSpecialDates([])
+      setExtraClasses([])
+      setTermSettingsState(null)
     }
   }
 
@@ -156,18 +206,70 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   const setTermSettings = async (settings: Omit<TermSettings, 'id' | 'isActive'>) => {
+    console.log('🔥 useSchedule: setTermSettings called with:', settings)
     try {
-      // Deactivate all existing term settings
-      await db.termSettings.toCollection().modify({ isActive: false })
+      console.log('🔥 useSchedule: Starting database transaction')
       
-      // Add new active term settings
-      const id = Date.now().toString()
-      const newSettings = { ...settings, id, isActive: true }
-      await db.termSettings.add(newSettings)
+      let savedSettings: TermSettings | null = null
       
-      setTermSettingsState(newSettings)
+      // Use a transaction to ensure data consistency
+      await db.transaction('rw', db.termSettings, async () => {
+        console.log('🔥 useSchedule: Inside transaction')
+        
+        try {
+          // First, let's check what's currently in the database
+          const existingSettings = await db.termSettings.toArray()
+          console.log('🔥 useSchedule: Existing term settings in DB:', existingSettings)
+          
+          // Deactivate all existing term settings
+          console.log('🔥 useSchedule: Deactivating existing term settings')
+          const deactivateResult = await db.termSettings.toCollection().modify({ isActive: false })
+          console.log('🔥 useSchedule: Deactivate result:', deactivateResult)
+          
+          // Add new active term settings
+          const id = Date.now().toString()
+          const newSettings = { ...settings, id, isActive: true }
+          console.log('🔥 useSchedule: Creating new term settings:', newSettings)
+          
+          const addResult = await db.termSettings.add(newSettings)
+          console.log('🔥 useSchedule: Add result:', addResult)
+          
+          // Verify the data was saved
+          const verifySettings = await db.termSettings.where('id').equals(id).first()
+          console.log('🔥 useSchedule: Verification - saved data:', verifySettings)
+          
+          // Store the settings to update state after transaction
+          savedSettings = newSettings
+        } catch (transactionError) {
+          console.error('🔥 useSchedule: Error during transaction:', transactionError)
+          throw transactionError
+        }
+      })
+      
+      console.log('🔥 useSchedule: Transaction completed successfully')
+      console.log('🔥 useSchedule: About to update state with:', savedSettings)
+      
+      // Update the state AFTER the transaction completes
+      if (savedSettings) {
+        setTermSettingsState(savedSettings)
+        console.log('🔥 useSchedule: State updated with savedSettings')
+      } else {
+        // If for some reason savedSettings is null, reload from DB
+        try {
+          const reloadedSettings = await db.termSettings.filter(term => term.isActive === true).first()
+          if (reloadedSettings) {
+            setTermSettingsState(reloadedSettings)
+            console.log('🔥 useSchedule: State reloaded from DB due to null savedSettings')
+          }
+        } catch (reloadError) {
+          console.error('🔥 useSchedule: Error reloading term settings:', reloadError)
+        }
+      }
+      
     } catch (error) {
-      console.error('Failed to set term settings:', error)
+      console.error('🔥 useSchedule: Failed to set term settings:', error)
+      console.error('🔥 useSchedule: Error details:', error.stack)
+      throw error // Re-throw to allow calling code to handle it
     }
   }
 
@@ -191,9 +293,9 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   const getAttendanceStats = (subjectId?: string): AttendanceStats[] => {
-    // This is a simplified version - would need more complex logic for actual implementation
     const stats: { [key: string]: AttendanceStats } = {}
     
+    // Count regular attendance records
     attendanceRecords.forEach(record => {
       const actualSubjectId = record.actualSubjectId || record.originalSubjectId
       if (!actualSubjectId || (subjectId && actualSubjectId !== subjectId)) return
@@ -223,18 +325,69 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     })
     
+    // Count extra classes as additional lectures conducted (attended)
+    extraClasses.forEach(extraClass => {
+      if (subjectId && extraClass.subjectId !== subjectId) return
+      
+      if (!stats[extraClass.subjectId]) {
+        stats[extraClass.subjectId] = {
+          subjectId: extraClass.subjectId,
+          totalLectures: 0,
+          attendedLectures: 0,
+          missedLectures: 0,
+          cancelledLectures: 0
+        }
+      }
+      
+      // Extra classes count as both total lectures and attended lectures
+      stats[extraClass.subjectId].totalLectures++
+      stats[extraClass.subjectId].attendedLectures++
+    })
+    
     return Object.values(stats)
   }
 
   const getTotalLecturesForSubject = async (subjectId: string, fromDate?: string, toDate?: string): Promise<number> => {
-    // This would require complex calculation based on timetable, term settings, special dates, etc.
-    // For now, returning a simple count
-    return attendanceRecords.filter(record => 
+    // Count attendance records
+    const attendanceCount = attendanceRecords.filter(record => 
       (record.actualSubjectId || record.originalSubjectId) === subjectId &&
       (!fromDate || record.date >= fromDate) &&
       (!toDate || record.date <= toDate)
     ).length
+    
+    // Count extra classes
+    const extraClassCount = extraClasses.filter(extraClass =>
+      extraClass.subjectId === subjectId &&
+      (!fromDate || extraClass.date >= fromDate) &&
+      (!toDate || extraClass.date <= toDate)
+    ).length
+    
+    return attendanceCount + extraClassCount
   }
+
+  // Debug function to check database state
+  const debugDatabaseState = async () => {
+    console.log('🔥 useSchedule: debugDatabaseState called')
+    const dbState = await db.debugDatabaseState()
+    console.log('🔥 useSchedule: Current hook state:')
+    console.log('🔥 useSchedule: - termSettings:', termSettings)
+    console.log('🔥 useSchedule: - attendanceRecords:', attendanceRecords.length)
+    console.log('🔥 useSchedule: - specialDates:', specialDates.length)
+    console.log('🔥 useSchedule: - extraClasses:', extraClasses.length)
+    return dbState
+  }
+
+  // Make debug function available globally for console testing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).debugScheduleState = debugDatabaseState
+      ;(window as any).clearScheduleData = async () => {
+        console.log('🔥 useSchedule: Clearing all data')
+        await db.clearAllData()
+        await loadData()
+      }
+    }
+  }, [])
 
   return (
     <ScheduleContext.Provider
