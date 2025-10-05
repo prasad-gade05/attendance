@@ -16,6 +16,7 @@ interface TimetableContextType {
   combineSlots: (timeSlotId: string, day: string, adjacentTimeSlotIds: string[]) => Promise<void>
   uncombineSlot: (combinedSlotId: string) => Promise<void>
   clearAllData: () => Promise<void>
+  loadData: () => Promise<void>
 }
 
 const TimetableContext = createContext<TimetableContextType | undefined>(undefined)
@@ -237,7 +238,8 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         assignSubjectToSlot,
         combineSlots,
         uncombineSlot,
-        clearAllData
+        clearAllData,
+        loadData
       }}
     >
       {children}

@@ -2,17 +2,36 @@ import React, { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from '../components/ui/button'
 import { useTimetable } from '../hooks/useTimetable'
+import { useSchedule } from '../hooks/useSchedule'
 import { Trash2, Calendar, CalendarDays, Grid3X3 } from 'lucide-react'
 import ConfirmDialog from './ConfirmDialog'
 
 const Header = () => {
-  const { clearAllData } = useTimetable()
+  const { clearAllData: clearTimetableData, loadData: loadTimetableData } = useTimetable()
+  const { clearAllData: clearScheduleData, refreshData: refreshScheduleData } = useSchedule()
   const [showClearDialog, setShowClearDialog] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
-  const handleClearAllData = () => {
-    clearAllData()
+  const handleClearAllData = async () => {
+    try {
+      // Clear all data from both providers
+      await Promise.all([
+        clearTimetableData(),
+        clearScheduleData()
+      ])
+      
+      // Refresh data in both providers
+      await Promise.all([
+        loadTimetableData(),
+        refreshScheduleData()
+      ])
+      
+      // Perform a full page refresh to ensure UI consistency
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to clear all data:', error)
+    }
   }
 
   return (

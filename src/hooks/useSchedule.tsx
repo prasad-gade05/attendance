@@ -33,6 +33,10 @@ interface ScheduleContextType {
   // Statistics methods
   getAttendanceStats: (subjectId?: string) => AttendanceStats[]
   getTotalLecturesForSubject: (subjectId: string, fromDate?: string, toDate?: string) => Promise<number>
+  
+  // Data management
+  clearAllData: () => Promise<void>
+  refreshData: () => Promise<void>
 }
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined)
@@ -365,6 +369,24 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return attendanceCount + extraClassCount
   }
 
+  const refreshData = async () => {
+    console.log('🔥 useSchedule: refreshData called')
+    await loadData()
+  }
+
+  const clearAllData = async () => {
+    try {
+      console.log('🔥 useSchedule: clearAllData called')
+      await db.clearAllData()
+      setAttendanceRecords([])
+      setSpecialDates([])
+      setExtraClasses([])
+      setTermSettingsState(null)
+    } catch (error) {
+      console.error('Failed to clear all schedule data:', error)
+    }
+  }
+
   // Debug function to check database state
   const debugDatabaseState = async () => {
     console.log('🔥 useSchedule: debugDatabaseState called')
@@ -410,7 +432,9 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         getActiveTermSettings,
         isDateInTerm,
         getAttendanceStats,
-        getTotalLecturesForSubject
+        getTotalLecturesForSubject,
+        clearAllData,
+        refreshData
       }}
     >
       {children}
