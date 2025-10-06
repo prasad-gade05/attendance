@@ -152,24 +152,24 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   const getStatusColor = () => {
     switch (attendanceStatus) {
       case 'attended':
-        return 'bg-green-100 border-green-200'
+        return 'bg-green-500/10 border-green-500/20'
       case 'missed':
-        return 'bg-red-100 border-red-200'
+        return 'bg-red-500/10 border-red-500/20'
       case 'cancelled':
-        return 'bg-yellow-100 border-yellow-200'
+        return 'bg-yellow-500/10 border-yellow-500/20'
       default:
-        return 'bg-gray-50 border-gray-200'
+        return 'bg-gray-500/10 border-gray-500/20'
     }
   }
 
   const getStatusIcon = () => {
     switch (attendanceStatus) {
       case 'attended':
-        return <Check className="h-4 w-4 text-green-600" />
+        return <Check className="h-4 w-4 text-green-500" />
       case 'missed':
-        return <X className="h-4 w-4 text-red-600" />
+        return <X className="h-4 w-4 text-red-500" />
       case 'cancelled':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       default:
         return null
     }
@@ -179,15 +179,15 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
 
   return (
     <Card className={`transition-colors ${getStatusColor()}`}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{getTimeRange()}</span>
+      <CardContent className="p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="font-medium text-sm">{getTimeRange()}</span>
               {isExtraClass && (
                 <Badge variant="secondary" className="text-xs">
-                  Extra Class
+                  Extra
                 </Badge>
               )}
               {isCombined && (
@@ -197,17 +197,18 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               )}
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {/* Subject Selection */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground min-w-[120px]">
-                  Scheduled Subject:
+                <span className="text-xs text-muted-foreground min-w-[100px]">
+                  Scheduled:
                 </span>
                 <div 
-                  className="px-2 py-1 rounded text-sm font-medium"
+                  className="px-2 py-1 rounded text-xs font-medium border min-w-0 truncate"
                   style={{ 
                     backgroundColor: subject.color + '20',
-                    color: subject.color
+                    color: subject.color,
+                    borderColor: subject.color + '40'
                   }}
                 >
                   {subject.name}
@@ -215,22 +216,22 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground min-w-[120px]">
-                  Actual Subject:
+                <span className="text-xs text-muted-foreground min-w-[100px]">
+                  Actual:
                 </span>
                 <Select value={selectedSubject} onValueChange={handleSubjectChange}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select subject" />
+                  <SelectTrigger className="w-32 text-xs h-7">
+                    <SelectValue placeholder="Subject" />
                   </SelectTrigger>
                   <SelectContent>
                     {subjects.map((subj) => (
                       <SelectItem key={subj.id} value={subj.id}>
                         <div className="flex items-center gap-2">
                           <div 
-                            className="w-3 h-3 rounded-full"
+                            className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: subj.color }}
                           />
-                          {subj.name}
+                          <span className="truncate">{subj.name}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -246,14 +247,14 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-1">
             {/* Attendance Status Buttons */}
             <div className="flex gap-1">
               <Button
                 size="sm"
                 variant={attendanceStatus === 'attended' ? 'default' : 'outline'}
                 onClick={() => handleStatusChange('attended')}
-                className="h-8 px-3"
+                className="h-7 px-2 text-xs"
               >
                 <Check className="h-3 w-3 mr-1" />
                 Attended
@@ -262,7 +263,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 size="sm"
                 variant={attendanceStatus === 'missed' ? 'default' : 'outline'}
                 onClick={() => handleStatusChange('missed')}
-                className="h-8 px-3"
+                className="h-7 px-2 text-xs"
               >
                 <X className="h-3 w-3 mr-1" />
                 Missed
@@ -271,7 +272,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 size="sm"
                 variant={attendanceStatus === 'cancelled' ? 'default' : 'outline'}
                 onClick={() => handleStatusChange('cancelled')}
-                className="h-8 px-3"
+                className="h-7 px-2 text-xs"
               >
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Cancelled
@@ -283,7 +284,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               <div className="flex gap-1">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="h-8 px-2">
+                    <Button size="sm" variant="outline" className="h-7 px-2">
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </AlertDialogTrigger>

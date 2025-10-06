@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button'
 import { useTimetable } from '../hooks/useTimetable'
 import { useSchedule } from '../hooks/useSchedule'
 import { Trash2, Calendar, CalendarDays, Grid3X3 } from 'lucide-react'
+import ThemeSwitcher from './ThemeSwitcher'
 import ConfirmDialog from './ConfirmDialog'
 
 const Header = () => {
@@ -73,6 +74,8 @@ const Header = () => {
               Timetable
             </Button>
           </div>
+          
+          <ThemeSwitcher />
           
           <Button 
             variant="destructive" 

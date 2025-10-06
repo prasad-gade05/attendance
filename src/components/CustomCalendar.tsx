@@ -94,7 +94,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDate, onDateSel
           <div
             key={day.toString()}
             className={`h-9 flex items-center justify-center text-sm cursor-pointer rounded-md
-              ${!isCurrentMonth ? 'text-muted-foreground opacity-50' : ''}
+              ${!isCurrentMonth ? 'text-muted-foreground opacity-50' : 'text-foreground'}
               ${isSelected ? 'bg-primary text-primary-foreground' : ''}
               ${isSameDay(day, new Date(new Date().setHours(0, 0, 0, 0))) && !isSelected ? 'bg-accent text-accent-foreground' : ''}
               hover:bg-muted transition-colors
@@ -125,7 +125,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDate, onDateSel
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 border rounded-lg bg-card">
       {renderHeader()}
       {renderDays()}
       {renderCells()}
