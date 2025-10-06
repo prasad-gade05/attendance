@@ -1,33 +1,31 @@
-# TimeFlow - Smart Schedule Management
+Smart Schedule & Attendance Management
 
-TimeFlow is a comprehensive timetable and attendance management application designed to help students and professionals keep track of their schedules with ease. Built with modern web technologies, it offers a seamless and intuitive experience for managing subjects, timetables, and attendance, all stored locally in your browser.
+This is a modern, powerful, and intuitive application designed to provide a comprehensive solution for managing academic or professional schedules and attendance. It goes beyond simple tracking by offering intelligent tools to help you stay organized, meet your attendance goals, and manage your time effectively. All data is stored locally in your browser, ensuring privacy and offline access.
 
-## ✨ Features
+## ✨ Why it is More Than Just an Attendance Tracker
 
-### 📅 Timetable Management
+This application is engineered to be a proactive tool for schedule management. While it covers all the essentials, its advanced features are what make it stand out:
 
-- **Visual Timetable**: An interactive weekly grid to visualize your schedule.
-- **Subject Management**: Add, edit, and delete subjects with custom names and colors.
-- **Flexible Time Slots**: Create and manage time slots for your daily schedule.
-- **Combine Slots**: Merge multiple time slots for longer lectures or sessions.
-- **Persistent Storage**: All your data is saved locally in your browser using IndexedDB.
+### 🚀 Key Advanced Features
 
-### 📋 Daily Schedule & Attendance
+- **Attendance Simulation**: Set a target attendance percentage (e.g., 75%) and let TimeFlow calculate how many future classes you need to attend or can afford to miss. This feature provides a clear path to achieving your attendance goals.
+- **Import Historical Data**: Already have attendance records? Import them for any subject up to a specific date. The imported data is locked, preventing accidental changes and ensuring a clean slate for future tracking.
+- **Dynamic & Flexible Schedule**:
+  - **Extra Classes**: Easily add extra classes to any date, with the option to use existing or create new time slots.
+  - **Special Dates**: Mark any day as a "Holiday" or "Exam Day" to automatically exclude it from your schedule and attendance calculations.
+  - **On-the-Fly Subject Swapping**: If a different subject is taught during a scheduled slot, you can easily change it for that specific day without altering your base timetable.
+- **Comprehensive Term Management**: Define your academic term with start and end dates. TimeFlow uses this period to provide accurate attendance statistics and scheduling, ensuring that only relevant days are active.
 
-- **Daily Schedule View**: See all your classes for any selected day.
-- **Calendar Navigation**: Easily navigate to any date using the built-in calendar.
-- **Attendance Tracking**: Mark lectures as "Attended," "Missed," or "Cancelled."
-- **Subject Verification**: Change the subject for a specific lecture if it differs from the schedule.
-- **Term Settings**: Define your academic term's start and end dates for accurate tracking.
-- **Special Dates**: Mark dates as "Holidays" or "Exam Days" to exclude them from your schedule.
-- **Extra Classes**: Add extra classes for any date, with custom time slots if needed.
+### 📊 Core Features
 
-### 📊 Advanced Features
-
-- **Attendance Statistics**: Get detailed insights into your attendance with an overall summary and per-subject breakdown.
-- **Attendance Simulation**: Set a target attendance percentage and find out how many classes you need to attend or can skip to achieve your goal.
-- **Theme Switching**: Choose between a light and dark theme for your comfort.
-- **Data Management**: Clear all your data to start fresh at any time.
+- **Visual Timetable**: A clean, interactive weekly grid to build and visualize your schedule.
+- **Subject & Time Slot Management**: Add, edit, and delete subjects with custom names and colors. Create and manage time slots to fit your daily routine.
+- **Combine Slots**: Merge consecutive time slots for longer lectures, labs, or sessions.
+- **Daily Schedule View**: A dedicated view to see all your classes for any selected day, with easy navigation via a built-in calendar.
+- **Detailed Attendance Tracking**: Mark lectures as "Attended," "Missed," or "Cancelled" with a single click.
+- **In-Depth Statistics**: Get detailed insights into your attendance with an overall summary and a per-subject breakdown, including percentages and lecture counts.
+- **Modern UI with Theming**: A clean, responsive interface with both light and dark themes to suit your preference.
+- **Local Data Storage**: All your data is securely stored in your browser using IndexedDB, which means it's private and available offline.
 
 ## 🚀 Getting Started
 
