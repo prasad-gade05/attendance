@@ -9,6 +9,7 @@ import { Textarea } from './ui/textarea'
 import { useTimetable } from '../hooks/useTimetable'
 import { useSchedule } from '../hooks/useSchedule'
 import { db } from '../lib/db'
+import TimePicker from './TimePicker'
 
 interface ExtraClassDialogProps {
   open: boolean
@@ -71,6 +72,8 @@ const ExtraClassDialog: React.FC<ExtraClassDialogProps> = ({
 
       resetForm()
       onOpenChange(false)
+      // Refresh the page after adding an extra class
+      window.location.reload()
     } catch (error) {
       console.error('Failed to add extra class:', error)
       alert('Failed to add extra class. Please try again.')
@@ -132,24 +135,19 @@ const ExtraClassDialog: React.FC<ExtraClassDialogProps> = ({
 
               {!useExistingSlot && (
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="start-time" className="text-xs">Start Time</Label>
-                    <Input
-                      id="start-time"
-                      type="time"
-                      value={newTimeSlot.startTime}
-                      onChange={(e) => setNewTimeSlot(prev => ({ ...prev, startTime: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="end-time" className="text-xs">End Time</Label>
-                    <Input
-                      id="end-time"
-                      type="time"
-                      value={newTimeSlot.endTime}
-                      onChange={(e) => setNewTimeSlot(prev => ({ ...prev, endTime: e.target.value }))}
-                    />
-                  </div>
+                  {/* Use TimePicker component for consistency */}
+                  <TimePicker 
+                    label="Start Time"
+                    name="startTime"
+                    value={newTimeSlot.startTime}
+                    onChange={(value) => setNewTimeSlot(prev => ({ ...prev, startTime: value }))}
+                  />
+                  <TimePicker 
+                    label="End Time"
+                    name="endTime"
+                    value={newTimeSlot.endTime}
+                    onChange={(value) => setNewTimeSlot(prev => ({ ...prev, endTime: value }))}
+                  />
                 </div>
               )}
             </div>
