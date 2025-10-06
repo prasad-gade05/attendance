@@ -1,175 +1,251 @@
-import React, { useState, useEffect } from 'react'
-import { BarChart3, Target, Calendar, BookOpen, Calculator } from 'lucide-react'
-import { format, parseISO, eachDayOfInterval, isWithinInterval, getDay, isAfter, isBefore, isEqual } from 'date-fns'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Progress } from './ui/progress'
-import { Badge } from './ui/badge'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
-import { Alert, AlertDescription } from '../components/ui/alert'
-import { useTimetable } from '../hooks/useTimetable'
-import { useSchedule } from '../hooks/useSchedule'
-import { Subject, AttendanceStats } from '../types'
+import React, { useState, useEffect } from "react";
+import {
+  BarChart3,
+  Target,
+  Calendar,
+  BookOpen,
+  Calculator,
+} from "lucide-react";
+import {
+  format,
+  parseISO,
+  eachDayOfInterval,
+  isWithinInterval,
+  getDay,
+  isAfter,
+  isBefore,
+  isEqual,
+} from "date-fns";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Progress } from "./ui/progress";
+import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { useTimetable } from "../hooks/useTimetable";
+import { useSchedule } from "../hooks/useSchedule";
+import { Subject, AttendanceStats } from "../types";
 
 interface SimulationDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface SubjectSimulationData {
-  subject: Subject
-  currentStats: AttendanceStats
-  targetPercentage: number
-  futureLectures: number
-  lecturesToAttend: number
-  lecturesToSkip: number
-  maxPossiblePercentage: number
-  minPossiblePercentage: number
-  isTargetAchievable: boolean
-  errorMessage?: string
+  subject: Subject;
+  currentStats: AttendanceStats;
+  targetPercentage: number;
+  futureLectures: number;
+  lecturesToAttend: number;
+  lecturesToSkip: number;
+  maxPossiblePercentage: number;
+  minPossiblePercentage: number;
+  isTargetAchievable: boolean;
+  errorMessage?: string;
 }
 
-const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const DAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 const SimulationDialog: React.FC<SimulationDialogProps> = ({
   open,
-  onOpenChange
+  onOpenChange,
 }) => {
-  const [simulationData, setSimulationData] = useState<SubjectSimulationData[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [simulationData, setSimulationData] = useState<SubjectSimulationData[]>(
+    []
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const { subjects, timeSlots, daySlots, combinedSlots } = useTimetable()
-  const { 
-    attendanceRecords, 
-    specialDates, 
+  const { subjects, timeSlots, daySlots, combinedSlots } = useTimetable();
+  const {
+    attendanceRecords,
+    specialDates,
     extraClasses,
-    termSettings, 
+    termSettings,
     getAttendanceStats,
-    isDateInTerm 
-  } = useSchedule()
+    isDateInTerm,
+    importedAttendance,
+    isDateLockedForSubject,
+    getImportedAttendanceForSubject,
+  } = useSchedule();
 
   useEffect(() => {
     if (open) {
-      calculateSimulationData()
+      calculateSimulationData();
     }
-  }, [open, attendanceRecords, termSettings, specialDates, extraClasses, subjects.length, timeSlots.length, daySlots.length, combinedSlots.length])
+  }, [
+    open,
+    attendanceRecords,
+    termSettings,
+    specialDates,
+    extraClasses,
+    subjects.length,
+    timeSlots.length,
+    daySlots.length,
+    combinedSlots.length,
+    importedAttendance, // Add importedAttendance as dependency
+  ]);
 
   const calculateSimulationData = async () => {
     if (!termSettings) {
-      setError('Please set up term dates to use the simulation feature')
-      return
+      setError("Please set up term dates to use the simulation feature");
+      return;
     }
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const todayDate = new Date()
-      const termEndDate = parseISO(termSettings.endDate)
-      
+      const todayDate = new Date();
+      const termEndDate = parseISO(termSettings.endDate);
+
       // If term has already ended, show appropriate message
       if (isBefore(termEndDate, todayDate)) {
-        setError('The term has already ended. No future lectures to simulate.')
-        setSimulationData([])
-        return
+        setError("The term has already ended. No future lectures to simulate.");
+        setSimulationData([]);
+        return;
       }
 
       // Calculate current attendance stats similar to AttendanceStatsPanel
-      const statsMap: { [key: string]: AttendanceStats } = {}
-      
+      const statsMap: { [key: string]: AttendanceStats } = {};
+
       // Initialize stats for all subjects
-      subjects.forEach(subject => {
+      subjects.forEach((subject) => {
         statsMap[subject.id] = {
           subjectId: subject.id,
           totalLectures: 0,
           attendedLectures: 0,
           missedLectures: 0,
-          cancelledLectures: 0
+          cancelledLectures: 0,
+        };
+      });
+
+      // Process each subject to handle imported attendance
+      for (const subject of subjects) {
+        const imported = getImportedAttendanceForSubject(subject.id);
+        
+        if (imported) {
+          // Use imported data as base
+          statsMap[subject.id] = {
+            subjectId: subject.id,
+            totalLectures: imported.totalLectures,
+            attendedLectures: imported.attendedLectures,
+            missedLectures: imported.missedLectures,
+            cancelledLectures: imported.cancelledLectures,
+          };
         }
-      })
+      }
 
       // Calculate total lectures that should have happened
-      const termStart = parseISO(termSettings.startDate)
-      const termEnd = parseISO(termSettings.endDate)
-      const today = new Date()
-      const calculationEnd = today < termEnd ? today : termEnd
+      const termStart = parseISO(termSettings.startDate);
+      const termEnd = parseISO(termSettings.endDate);
+      const today = new Date();
+      const calculationEnd = today < termEnd ? today : termEnd;
 
       // Get all days in the term up to today
-      const allDays = eachDayOfInterval({ start: termStart, end: calculationEnd })
+      const allDays = eachDayOfInterval({
+        start: termStart,
+        end: calculationEnd,
+      });
 
       for (const date of allDays) {
-        const dateString = format(date, 'yyyy-MM-dd')
-        const dayName = DAYS[getDay(date)]
-        
+        const dateString = format(date, "yyyy-MM-dd");
+        const dayName = DAYS[getDay(date)];
+
         // Skip special dates (holidays/exams)
-        const isSpecial = specialDates.some(sd => sd.date === dateString)
-        if (isSpecial) continue
+        const isSpecial = specialDates.some((sd) => sd.date === dateString);
+        if (isSpecial) continue;
 
         // Get scheduled lectures for this day
-        const dayLectures = daySlots.filter(ds => 
-          ds.day === dayName && ds.subjectId
-        )
+        const dayLectures = daySlots.filter(
+          (ds) => ds.day === dayName && ds.subjectId
+        );
 
         // Process regular lectures
         for (const daySlot of dayLectures) {
           // Check if this slot is part of a combined slot
-          const combinedSlot = combinedSlots.find(cs => 
-            cs.day === dayName && cs.daySlotIds.includes(daySlot.id)
-          )
+          const combinedSlot = combinedSlots.find(
+            (cs) => cs.day === dayName && cs.daySlotIds.includes(daySlot.id)
+          );
 
-          let subjectId = daySlot.subjectId!
-          let shouldCount = true
+          let subjectId = daySlot.subjectId!;
+          let shouldCount = true;
 
           if (combinedSlot) {
             // Only count the first slot of a combined slot
             const firstDaySlotId = combinedSlot.daySlotIds
-              .map(id => daySlots.find(ds => ds.id === id))
+              .map((id) => daySlots.find((ds) => ds.id === id))
               .filter(Boolean)
               .sort((a, b) => {
-                const aTimeSlot = timeSlots.find(ts => ts.id === a!.timeSlotId)
-                const bTimeSlot = timeSlots.find(ts => ts.id === b!.timeSlotId)
-                return aTimeSlot!.startTime.localeCompare(bTimeSlot!.startTime)
-              })[0]?.id
+                const aTimeSlot = timeSlots.find(
+                  (ts) => ts.id === a!.timeSlotId
+                );
+                const bTimeSlot = timeSlots.find(
+                  (ts) => ts.id === b!.timeSlotId
+                );
+                return aTimeSlot!.startTime.localeCompare(bTimeSlot!.startTime);
+              })[0]?.id;
 
-            shouldCount = daySlot.id === firstDaySlotId
-            subjectId = combinedSlot.subjectId
+            shouldCount = daySlot.id === firstDaySlotId;
+            subjectId = combinedSlot.subjectId;
+          }
+
+          // Check if this date is locked for this subject (imported data)
+          if (isDateLockedForSubject(dateString, subjectId)) {
+            shouldCount = false;
           }
 
           if (shouldCount) {
             // Check if there's an attendance record for this lecture
-            const attendanceRecord = attendanceRecords.find(ar => 
-              ar.date === dateString && ar.timeSlotId === daySlot.timeSlotId
-            )
+            const attendanceRecord = attendanceRecords.find(
+              (ar) =>
+                ar.date === dateString && ar.timeSlotId === daySlot.timeSlotId
+            );
 
             if (attendanceRecord) {
-              const actualSubjectId = attendanceRecord.actualSubjectId || attendanceRecord.originalSubjectId || subjectId
-              
-              if (attendanceRecord.status !== 'cancelled') {
-                statsMap[actualSubjectId].totalLectures++
-                
-                if (attendanceRecord.status === 'attended') {
-                  statsMap[actualSubjectId].attendedLectures++
-                } else if (attendanceRecord.status === 'missed') {
-                  statsMap[actualSubjectId].missedLectures++
+              const actualSubjectId =
+                attendanceRecord.actualSubjectId ||
+                attendanceRecord.originalSubjectId ||
+                subjectId;
+
+              if (attendanceRecord.status !== "cancelled") {
+                statsMap[actualSubjectId].totalLectures++;
+
+                if (attendanceRecord.status === "attended") {
+                  statsMap[actualSubjectId].attendedLectures++;
+                } else if (attendanceRecord.status === "missed") {
+                  statsMap[actualSubjectId].missedLectures++;
                 }
               } else {
-                statsMap[actualSubjectId].cancelledLectures++
+                statsMap[actualSubjectId].cancelledLectures++;
               }
             } else {
               // No attendance record - count as total lecture but not attended/missed
-              statsMap[subjectId].totalLectures++
+              statsMap[subjectId].totalLectures++;
             }
           }
         }
       }
 
       // Process extra classes
-      extraClasses.forEach(extraClass => {
+      extraClasses.forEach((extraClass) => {
         // Only count extra classes that are within the term
         if (isDateInTerm(extraClass.date)) {
           const subjectId = extraClass.subjectId;
-          
+
+          // Check if this date is locked for this subject (imported data)
+          if (isDateLockedForSubject(extraClass.date, subjectId)) {
+            return; // Skip locked dates
+          }
+
           // Initialize stats for this subject if not already present
           if (!statsMap[subjectId]) {
             statsMap[subjectId] = {
@@ -177,54 +253,56 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
               totalLectures: 0,
               attendedLectures: 0,
               missedLectures: 0,
-              cancelledLectures: 0
-            }
+              cancelledLectures: 0,
+            };
           }
-          
+
           // Check if there's an attendance record for this extra class
-          const attendanceRecord = attendanceRecords.find(ar => 
-            ar.date === extraClass.date && ar.timeSlotId === extraClass.timeSlotId
-          )
-          
+          const attendanceRecord = attendanceRecords.find(
+            (ar) =>
+              ar.date === extraClass.date &&
+              ar.timeSlotId === extraClass.timeSlotId
+          );
+
           if (attendanceRecord) {
             // Use the actual attendance record status
-            if (attendanceRecord.status !== 'cancelled') {
-              statsMap[subjectId].totalLectures++
-              
-              if (attendanceRecord.status === 'attended') {
-                statsMap[subjectId].attendedLectures++
-              } else if (attendanceRecord.status === 'missed') {
-                statsMap[subjectId].missedLectures++
+            if (attendanceRecord.status !== "cancelled") {
+              statsMap[subjectId].totalLectures++;
+
+              if (attendanceRecord.status === "attended") {
+                statsMap[subjectId].attendedLectures++;
+              } else if (attendanceRecord.status === "missed") {
+                statsMap[subjectId].missedLectures++;
               }
             } else {
-              statsMap[subjectId].cancelledLectures++
+              statsMap[subjectId].cancelledLectures++;
             }
           } else {
             // No attendance record - count as total lecture and attended by default
-            statsMap[subjectId].totalLectures++
-            statsMap[subjectId].attendedLectures++
+            statsMap[subjectId].totalLectures++;
+            statsMap[subjectId].attendedLectures++;
           }
         }
-      })
+      });
 
       // Calculate future lectures for each subject
-      const simulationResults: SubjectSimulationData[] = []
-      
+      const simulationResults: SubjectSimulationData[] = [];
+
       for (const subject of subjects) {
         const subjectCurrentStats = statsMap[subject.id] || {
           subjectId: subject.id,
           totalLectures: 0,
           attendedLectures: 0,
           missedLectures: 0,
-          cancelledLectures: 0
-        }
+          cancelledLectures: 0,
+        };
 
         // Calculate future lectures from today to term end
         const futureLectures = await calculateFutureLectures(
           subject.id,
           todayDate,
           termEndDate
-        )
+        );
 
         // Initialize with 0% target (will be updated by user)
         const simulation: SubjectSimulationData = {
@@ -236,205 +314,232 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
           lecturesToSkip: 0,
           maxPossiblePercentage: 0,
           minPossiblePercentage: 0,
-          isTargetAchievable: true
-        }
+          isTargetAchievable: true,
+        };
 
         // Calculate max and min possible percentages
         if (futureLectures > 0) {
-          const maxTotal = subjectCurrentStats.totalLectures + futureLectures
-          const maxAttended = subjectCurrentStats.attendedLectures + futureLectures
-          const minAttended = subjectCurrentStats.attendedLectures
-          
-          simulation.maxPossiblePercentage = maxTotal > 0 ? Math.round((maxAttended / maxTotal) * 100) : 0
-          simulation.minPossiblePercentage = maxTotal > 0 ? Math.round((minAttended / maxTotal) * 100) : 0
+          const maxTotal = subjectCurrentStats.totalLectures + futureLectures;
+          const maxAttended =
+            subjectCurrentStats.attendedLectures + futureLectures;
+          const minAttended = subjectCurrentStats.attendedLectures;
+
+          simulation.maxPossiblePercentage =
+            maxTotal > 0 ? Math.round((maxAttended / maxTotal) * 100) : 0;
+          simulation.minPossiblePercentage =
+            maxTotal > 0 ? Math.round((minAttended / maxTotal) * 100) : 0;
         }
 
-        simulationResults.push(simulation)
+        simulationResults.push(simulation);
       }
 
-      setSimulationData(simulationResults)
+      setSimulationData(simulationResults);
     } catch (err) {
-      console.error('Failed to calculate simulation data:', err)
-      setError('Failed to calculate simulation data. Please try again.')
+      console.error("Failed to calculate simulation data:", err);
+      setError("Failed to calculate simulation data. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const calculateFutureLectures = async (subjectId: string, fromDate: Date, toDate: Date): Promise<number> => {
-    if (!termSettings) return 0
+  const calculateFutureLectures = async (
+    subjectId: string,
+    fromDate: Date,
+    toDate: Date
+  ): Promise<number> => {
+    if (!termSettings) return 0;
 
-    const termStart = parseISO(termSettings.startDate)
-    const termEnd = parseISO(termSettings.endDate)
-    
+    const termStart = parseISO(termSettings.startDate);
+    const termEnd = parseISO(termSettings.endDate);
+
     // Adjust the calculation period to be within the term
-    const calculationStart = isAfter(fromDate, termStart) ? fromDate : termStart
-    const calculationEnd = isBefore(toDate, termEnd) ? toDate : termEnd
+    const calculationStart = isAfter(fromDate, termStart)
+      ? fromDate
+      : termStart;
+    const calculationEnd = isBefore(toDate, termEnd) ? toDate : termEnd;
 
     // If start date is after end date, no future lectures
     if (isAfter(calculationStart, calculationEnd)) {
-      return 0
+      return 0;
     }
 
     // Get all days in the future period
-    const allDays = eachDayOfInterval({ start: calculationStart, end: calculationEnd })
+    const allDays = eachDayOfInterval({
+      start: calculationStart,
+      end: calculationEnd,
+    });
 
-    let futureLectureCount = 0
+    let futureLectureCount = 0;
 
     for (const date of allDays) {
-      const dateString = format(date, 'yyyy-MM-dd')
-      const dayName = DAYS[getDay(date)]
-      
+      const dateString = format(date, "yyyy-MM-dd");
+      const dayName = DAYS[getDay(date)];
+
       // Skip special dates (holidays/exams)
-      const isSpecial = specialDates.some(sd => sd.date === dateString)
-      if (isSpecial) continue
+      const isSpecial = specialDates.some((sd) => sd.date === dateString);
+      if (isSpecial) continue;
 
       // Get scheduled lectures for this day and subject
-      const dayLectures = daySlots.filter(ds => 
-        ds.day === dayName && ds.subjectId === subjectId
-      )
+      const dayLectures = daySlots.filter(
+        (ds) => ds.day === dayName && ds.subjectId === subjectId
+      );
 
       // Process regular lectures
       for (const daySlot of dayLectures) {
         // Check if this slot is part of a combined slot
-        const combinedSlot = combinedSlots.find(cs => 
-          cs.day === dayName && cs.daySlotIds.includes(daySlot.id)
-        )
+        const combinedSlot = combinedSlots.find(
+          (cs) => cs.day === dayName && cs.daySlotIds.includes(daySlot.id)
+        );
 
-        let shouldCount = true
+        let shouldCount = true;
 
         if (combinedSlot) {
           // Only count the first slot of a combined slot
           const firstDaySlotId = combinedSlot.daySlotIds
-            .map(id => daySlots.find(ds => ds.id === id))
+            .map((id) => daySlots.find((ds) => ds.id === id))
             .filter(Boolean)
             .sort((a, b) => {
-              const aTimeSlot = timeSlots.find(ts => ts.id === a!.timeSlotId)
-              const bTimeSlot = timeSlots.find(ts => ts.id === b!.timeSlotId)
-              return aTimeSlot!.startTime.localeCompare(bTimeSlot!.startTime)
-            })[0]?.id
+              const aTimeSlot = timeSlots.find((ts) => ts.id === a!.timeSlotId);
+              const bTimeSlot = timeSlots.find((ts) => ts.id === b!.timeSlotId);
+              return aTimeSlot!.startTime.localeCompare(bTimeSlot!.startTime);
+            })[0]?.id;
 
-          shouldCount = daySlot.id === firstDaySlotId
+          shouldCount = daySlot.id === firstDaySlotId;
+        }
+
+        // Check if this date is locked for this subject (imported data)
+        if (isDateLockedForSubject(dateString, subjectId)) {
+          shouldCount = false;
         }
 
         if (shouldCount) {
-          futureLectureCount++
+          futureLectureCount++;
         }
       }
     }
 
     // Add future extra classes for this subject
-    const futureExtraClasses = extraClasses.filter(extraClass => {
-      const extraClassDate = parseISO(extraClass.date)
+    const futureExtraClasses = extraClasses.filter((extraClass) => {
+      const extraClassDate = parseISO(extraClass.date);
       return (
         extraClass.subjectId === subjectId &&
-        (isAfter(extraClassDate, fromDate) || isEqual(extraClassDate, fromDate)) &&
-        isDateInTerm(extraClass.date)
-      )
-    })
+        (isAfter(extraClassDate, fromDate) ||
+          isEqual(extraClassDate, fromDate)) &&
+        isDateInTerm(extraClass.date) &&
+        // Check if this date is NOT locked for this subject
+        !isDateLockedForSubject(extraClass.date, subjectId)
+      );
+    });
 
-    futureLectureCount += futureExtraClasses.length
+    futureLectureCount += futureExtraClasses.length;
 
-    return futureLectureCount
-  }
+    return futureLectureCount;
+  };
 
   const updateTargetPercentage = (subjectId: string, percentage: number) => {
-    setSimulationData(prev => prev.map(data => {
-      if (data.subject.id === subjectId) {
-        // Validate percentage input
-        const validPercentage = Math.min(100, Math.max(0, percentage || 0))
-        
-        // Calculate required lectures to attend
-        const { 
-          lecturesToAttend, 
-          lecturesToSkip, 
-          isTargetAchievable, 
-          errorMessage 
-        } = calculateRequiredLectures(data, validPercentage)
-        
-        return {
-          ...data,
-          targetPercentage: validPercentage,
-          lecturesToAttend,
-          lecturesToSkip,
-          isTargetAchievable,
-          errorMessage
+    setSimulationData((prev) =>
+      prev.map((data) => {
+        if (data.subject.id === subjectId) {
+          // Validate percentage input
+          const validPercentage = Math.min(100, Math.max(0, percentage || 0));
+
+          // Calculate required lectures to attend
+          const {
+            lecturesToAttend,
+            lecturesToSkip,
+            isTargetAchievable,
+            errorMessage,
+          } = calculateRequiredLectures(data, validPercentage);
+
+          return {
+            ...data,
+            targetPercentage: validPercentage,
+            lecturesToAttend,
+            lecturesToSkip,
+            isTargetAchievable,
+            errorMessage,
+          };
         }
-      }
-      return data
-    }))
-  }
+        return data;
+      })
+    );
+  };
 
   const calculateRequiredLectures = (
-    data: SubjectSimulationData, 
+    data: SubjectSimulationData,
     targetPercentage: number
-  ): { 
-    lecturesToAttend: number, 
-    lecturesToSkip: number, 
-    isTargetAchievable: boolean,
-    errorMessage?: string
+  ): {
+    lecturesToAttend: number;
+    lecturesToSkip: number;
+    isTargetAchievable: boolean;
+    errorMessage?: string;
   } => {
-    const { currentStats, futureLectures } = data
-    
+    const { currentStats, futureLectures } = data;
+
     // If no future lectures, check if target is already met
     if (futureLectures === 0) {
-      const currentPercentage = currentStats.totalLectures > 0 
-        ? Math.round((currentStats.attendedLectures / currentStats.totalLectures) * 100)
-        : 0
-      
+      const currentPercentage =
+        currentStats.totalLectures > 0
+          ? Math.round(
+              (currentStats.attendedLectures / currentStats.totalLectures) * 100
+            )
+          : 0;
+
       if (currentPercentage >= targetPercentage) {
         return {
           lecturesToAttend: 0,
           lecturesToSkip: 0,
-          isTargetAchievable: true
-        }
+          isTargetAchievable: true,
+        };
       } else {
         return {
           lecturesToAttend: 0,
           lecturesToSkip: 0,
           isTargetAchievable: false,
-          errorMessage: 'No future lectures available to achieve target'
-        }
+          errorMessage: "No future lectures available to achieve target",
+        };
       }
     }
 
     // Calculate required attended lectures to meet target
-    const totalLectures = currentStats.totalLectures + futureLectures
-    const requiredAttended = Math.ceil((targetPercentage / 100) * totalLectures)
-    const additionalNeeded = requiredAttended - currentStats.attendedLectures
-    
+    const totalLectures = currentStats.totalLectures + futureLectures;
+    const requiredAttended = Math.ceil(
+      (targetPercentage / 100) * totalLectures
+    );
+    const additionalNeeded = requiredAttended - currentStats.attendedLectures;
+
     // Check if target is achievable
     if (additionalNeeded <= 0) {
       // Target already achievable even if all future lectures are missed
       return {
         lecturesToAttend: 0,
         lecturesToSkip: futureLectures,
-        isTargetAchievable: true
-      }
+        isTargetAchievable: true,
+      };
     }
-    
+
     if (additionalNeeded > futureLectures) {
       // Target not achievable even if all future lectures are attended
       return {
         lecturesToAttend: futureLectures,
         lecturesToSkip: 0,
         isTargetAchievable: false,
-        errorMessage: `Target of ${targetPercentage}% is not achievable. Maximum possible is ${data.maxPossiblePercentage}%.`
-      }
+        errorMessage: `Target of ${targetPercentage}% is not achievable. Maximum possible is ${data.maxPossiblePercentage}%.`,
+      };
     }
-    
+
     // Target is achievable
     return {
       lecturesToAttend: additionalNeeded,
       lecturesToSkip: futureLectures - additionalNeeded,
-      isTargetAchievable: true
-    }
-  }
+      isTargetAchievable: true,
+    };
+  };
 
   const getCurrentAttendancePercentage = (stat: AttendanceStats) => {
-    if (stat.totalLectures === 0) return 0
-    return Math.round((stat.attendedLectures / stat.totalLectures) * 100)
-  }
+    if (stat.totalLectures === 0) return 0;
+    return Math.round((stat.attendedLectures / stat.totalLectures) * 100);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -460,7 +565,9 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
         ) : loading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="text-muted-foreground mt-4">Calculating simulation data...</p>
+            <p className="text-muted-foreground mt-4">
+              Calculating simulation data...
+            </p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -473,7 +580,9 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
-                  Enter your target attendance percentage for each subject. The system will calculate how many future lectures you need to attend to achieve your goal.
+                  Enter your target attendance percentage for each subject. The
+                  system will calculate how many future lectures you need to
+                  attend to achieve your goal.
                 </p>
               </CardContent>
             </Card>
@@ -488,27 +597,45 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
             ) : (
               <div className="grid gap-4">
                 {simulationData.map((data) => {
-                  const currentPercentage = getCurrentAttendancePercentage(data.currentStats)
-                  
+                  const currentPercentage = getCurrentAttendancePercentage(
+                    data.currentStats
+                  );
+                  const imported = getImportedAttendanceForSubject(data.subject.id);
+
                   return (
                     <Card key={data.subject.id}>
                       <CardHeader className="pb-3">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="flex items-center gap-2">
-                            <div 
+                            <div
                               className="w-4 h-4 rounded-full"
                               style={{ backgroundColor: data.subject.color }}
                             />
-                            <CardTitle className="text-lg">{data.subject.name}</CardTitle>
+                            <CardTitle className="text-lg">
+                              {data.subject.name}
+                              {imported && (
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  (Imported)
+                                </span>
+                              )}
+                            </CardTitle>
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="text-right">
-                              <div className="text-sm text-muted-foreground">Current</div>
-                              <div className="text-xl font-bold">{currentPercentage}%</div>
+                              <div className="text-sm text-muted-foreground">
+                                Current
+                              </div>
+                              <div className="text-xl font-bold">
+                                {currentPercentage}%
+                              </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-sm text-muted-foreground">Target</div>
-                              <div className="text-xl font-bold">{data.targetPercentage}%</div>
+                              <div className="text-sm text-muted-foreground">
+                                Target
+                              </div>
+                              <div className="text-xl font-bold">
+                                {data.targetPercentage}%
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -524,79 +651,120 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
                                 type="number"
                                 min="0"
                                 max="100"
-                                value={data.targetPercentage || ''}
-                                onChange={(e) => updateTargetPercentage(data.subject.id, parseInt(e.target.value) || 0)}
+                                value={data.targetPercentage || ""}
+                                onChange={(e) =>
+                                  updateTargetPercentage(
+                                    data.subject.id,
+                                    parseInt(e.target.value) || 0
+                                  )
+                                }
                                 className="w-24"
                               />
                               <span className="flex items-center">%</span>
                             </div>
                           </div>
-                          
+
                           <div className="flex items-end">
                             {!data.isTargetAchievable && data.errorMessage && (
                               <Alert variant="destructive" className="py-2">
-                                <AlertDescription>{data.errorMessage}</AlertDescription>
+                                <AlertDescription>
+                                  {data.errorMessage}
+                                </AlertDescription>
                               </Alert>
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-4">
                           <div className="text-center">
-                            <div className="font-bold text-blue-600">{data.currentStats.totalLectures}</div>
-                            <div className="text-muted-foreground">Current Lectures</div>
+                            <div className="font-bold text-blue-600">
+                              {data.currentStats.totalLectures}
+                            </div>
+                            <div className="text-muted-foreground">
+                              Current Lectures
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="font-bold text-green-600">{data.currentStats.attendedLectures}</div>
-                            <div className="text-muted-foreground">Attended</div>
+                            <div className="font-bold text-green-600">
+                              {data.currentStats.attendedLectures}
+                            </div>
+                            <div className="text-muted-foreground">
+                              Attended
+                            </div>
                           </div>
                           <div className="text-center">
-                            <div className="font-bold text-blue-600">{data.futureLectures}</div>
-                            <div className="text-muted-foreground">Future Lectures</div>
+                            <div className="font-bold text-blue-600">
+                              {data.futureLectures}
+                            </div>
+                            <div className="text-muted-foreground">
+                              Future Lectures
+                            </div>
                           </div>
                           <div className="text-center">
                             <div className="font-bold text-purple-600">
-                              {data.currentStats.totalLectures + data.futureLectures}
+                              {data.currentStats.totalLectures +
+                                data.futureLectures}
                             </div>
-                            <div className="text-muted-foreground">Total Possible</div>
+                            <div className="text-muted-foreground">
+                              Total Possible
+                            </div>
                           </div>
                         </div>
-                        
+
                         {data.targetPercentage > 0 && (
                           <div className="space-y-4">
                             <div>
                               <div className="flex justify-between text-sm mb-1">
                                 <span>Required Action</span>
                                 <span>
-                                  {data.lecturesToAttend} to attend, {data.lecturesToSkip} to skip
+                                  {data.lecturesToAttend} to attend,{" "}
+                                  {data.lecturesToSkip} to skip
                                 </span>
                               </div>
-                              <Progress 
-                                value={data.futureLectures > 0 ? (data.lecturesToAttend / data.futureLectures) * 100 : 0} 
+                              <Progress
+                                value={
+                                  data.futureLectures > 0
+                                    ? (data.lecturesToAttend /
+                                        data.futureLectures) *
+                                      100
+                                    : 0
+                                }
                                 className="h-2"
                               />
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4">
                               <div className="text-center p-3 bg-green-50 rounded-lg">
-                                <div className="font-bold text-green-600 text-lg">{data.lecturesToAttend}</div>
-                                <div className="text-sm text-muted-foreground">Lectures to Attend</div>
+                                <div className="font-bold text-green-600 text-lg">
+                                  {data.lecturesToAttend}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Lectures to Attend
+                                </div>
                               </div>
                               <div className="text-center p-3 bg-red-50 rounded-lg">
-                                <div className="font-bold text-red-600 text-lg">{data.lecturesToSkip}</div>
-                                <div className="text-sm text-muted-foreground">Lectures to Skip</div>
+                                <div className="font-bold text-red-600 text-lg">
+                                  {data.lecturesToSkip}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Lectures to Skip
+                                </div>
                               </div>
                             </div>
-                            
+
                             <div className="flex justify-between text-sm">
-                              <span>Max Possible: {data.maxPossiblePercentage}%</span>
-                              <span>Min Possible: {data.minPossiblePercentage}%</span>
+                              <span>
+                                Max Possible: {data.maxPossiblePercentage}%
+                              </span>
+                              <span>
+                                Min Possible: {data.minPossiblePercentage}%
+                              </span>
                             </div>
                           </div>
                         )}
                       </CardContent>
                     </Card>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -604,7 +772,7 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
         )}
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default SimulationDialog
+export default SimulationDialog;

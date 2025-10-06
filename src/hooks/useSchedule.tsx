@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { db } from '../lib/db'
-import { AttendanceRecord, SpecialDate, ExtraClass, TermSettings, AttendanceStats } from '../types'
-import { format, isWithinInterval, parseISO, getDay, isSameDay } from 'date-fns'
+import { AttendanceRecord, SpecialDate, ExtraClass, TermSettings, AttendanceStats, ImportedAttendance } from '../types'
+import { format, isWithinInterval, parseISO, getDay, isSameDay, isBefore, isEqual } from 'date-fns'
 
 interface ScheduleContextType {
   attendanceRecords: AttendanceRecord[]
   specialDates: SpecialDate[]
   extraClasses: ExtraClass[]
   termSettings: TermSettings | null
+  importedAttendance: ImportedAttendance[]
   
   // Attendance methods
   markAttendance: (record: Omit<AttendanceRecord, 'id'>) => Promise<void>
@@ -34,6 +35,11 @@ interface ScheduleContextType {
   getAttendanceStats: (subjectId?: string) => AttendanceStats[]
   getTotalLecturesForSubject: (subjectId: string, fromDate?: string, toDate?: string) => Promise<number>
   
+  // Import attendance methods
+  importAttendance: (data: Omit<ImportedAttendance, 'id'>) => Promise<void>
+  getImportedAttendanceForSubject: (subjectId: string) => ImportedAttendance | null
+  isDateLockedForSubject: (date: string, subjectId: string) => boolean
+  
   // Data management
   clearAllData: () => Promise<void>
   refreshData: () => Promise<void>
@@ -46,6 +52,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [specialDates, setSpecialDates] = useState<SpecialDate[]>([])
   const [extraClasses, setExtraClasses] = useState<ExtraClass[]>([])
   const [termSettings, setTermSettingsState] = useState<TermSettings | null>(null)
+  const [importedAttendance, setImportedAttendance] = useState<ImportedAttendance[]>([])
 
   console.log('🔥 ScheduleProvider: Component rendered, current termSettings state:', termSettings)
 
@@ -68,12 +75,14 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         loadedAttendance,
         loadedSpecialDates,
         loadedExtraClasses,
-        loadedTermSettings
+        loadedTermSettings,
+        loadedImportedAttendance
       ] = await Promise.all([
         db.attendanceRecords.toArray(),
         db.specialDates.toArray(),
         db.extraClasses.toArray(),
-        db.termSettings.filter(term => term.isActive === true).first()
+        db.termSettings.filter(term => term.isActive === true).first(),
+        db.importedAttendance.toArray()
       ])
       
       console.log('🔥 useSchedule: Loaded data:')
@@ -81,6 +90,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.log('🔥 useSchedule: - specialDates:', loadedSpecialDates?.length || 0)
       console.log('🔥 useSchedule: - extraClasses:', loadedExtraClasses?.length || 0)
       console.log('🔥 useSchedule: - termSettings:', loadedTermSettings)
+      console.log('🔥 useSchedule: - importedAttendance:', loadedImportedAttendance?.length || 0)
       
       // Fallback: if no active term settings found, get the most recent one
       let finalTermSettings = loadedTermSettings;
@@ -112,6 +122,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setSpecialDates(loadedSpecialDates)
       setExtraClasses(loadedExtraClasses)
       setTermSettingsState(finalTermSettings || null)
+      setImportedAttendance(loadedImportedAttendance)
       
       console.log('🔥 useSchedule: State updated successfully, final termSettings:', finalTermSettings)
     } catch (error) {
@@ -121,6 +132,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setSpecialDates([])
       setExtraClasses([])
       setTermSettingsState(null)
+      setImportedAttendance([])
     }
   }
 
@@ -399,6 +411,100 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return attendanceCount + extraClassCount
   }
 
+  const importAttendance = async (data: Omit<ImportedAttendance, 'id'>) => {
+    try {
+      // Check if there's already an import record for this subject
+      const existingImport = importedAttendance.find(ia => ia.subjectId === data.subjectId);
+      
+      // Delete existing attendance records for this subject on or before the import date
+      const recordsToDelete = attendanceRecords.filter(record => {
+        // Check if record is for the same subject
+        const recordSubjectId = record.actualSubjectId || record.originalSubjectId;
+        if (recordSubjectId !== data.subjectId) return false;
+        
+        // Check if record date is on or before import date
+        const recordDate = parseISO(record.date);
+        const importDate = parseISO(data.importDate);
+        return isBefore(recordDate, importDate) || isEqual(recordDate, importDate);
+      });
+      
+      // Delete extra classes for this subject on or before the import date
+      const extraClassesToDelete = extraClasses.filter(extraClass => {
+        if (extraClass.subjectId !== data.subjectId) return false;
+        
+        const extraClassDate = parseISO(extraClass.date);
+        const importDate = parseISO(data.importDate);
+        return isBefore(extraClassDate, importDate) || isEqual(extraClassDate, importDate);
+      });
+      
+      // Use transaction to ensure data consistency
+      await db.transaction('rw', 
+        db.importedAttendance, 
+        db.attendanceRecords, 
+        db.extraClasses,
+        async () => {
+          // Delete existing import record if it exists
+          if (existingImport) {
+            await db.importedAttendance.delete(existingImport.id);
+          }
+          
+          // Delete old attendance records
+          for (const record of recordsToDelete) {
+            await db.attendanceRecords.delete(record.id);
+          }
+          
+          // Delete old extra classes
+          for (const extraClass of extraClassesToDelete) {
+            await db.extraClasses.delete(extraClass.id);
+          }
+          
+          // Add new import record
+          const id = Date.now().toString();
+          const newImportRecord = { ...data, id };
+          await db.importedAttendance.add(newImportRecord);
+          
+          // Update state
+          setImportedAttendance(prev => {
+            // Remove existing record if it exists
+            const filtered = existingImport 
+              ? prev.filter(ia => ia.id !== existingImport.id) 
+              : prev;
+            // Add new record
+            return [...filtered, newImportRecord];
+          });
+          
+          // Update attendance records state
+          setAttendanceRecords(prev => 
+            prev.filter(record => !recordsToDelete.some(toDelete => toDelete.id === record.id))
+          );
+          
+          // Update extra classes state
+          setExtraClasses(prev => 
+            prev.filter(extraClass => !extraClassesToDelete.some(toDelete => toDelete.id === extraClass.id))
+          );
+        }
+      );
+    } catch (error) {
+      console.error('Failed to import attendance:', error);
+      throw error;
+    }
+  }
+
+  const getImportedAttendanceForSubject = (subjectId: string): ImportedAttendance | null => {
+    return importedAttendance.find(ia => ia.subjectId === subjectId) || null;
+  }
+
+  const isDateLockedForSubject = (date: string, subjectId: string): boolean => {
+    const imported = getImportedAttendanceForSubject(subjectId);
+    if (!imported) return false;
+    
+    const targetDate = parseISO(date);
+    const importDate = parseISO(imported.importDate);
+    
+    // Date is locked if it's on or before the import date
+    return isBefore(targetDate, importDate) || isEqual(targetDate, importDate);
+  }
+
   const refreshData = async () => {
     console.log('🔥 useSchedule: refreshData called')
     await loadData()
@@ -412,6 +518,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setSpecialDates([])
       setExtraClasses([])
       setTermSettingsState(null)
+      setImportedAttendance([])
     } catch (error) {
       console.error('Failed to clear all schedule data:', error)
     }
@@ -426,6 +533,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     console.log('🔥 useSchedule: - attendanceRecords:', attendanceRecords.length)
     console.log('🔥 useSchedule: - specialDates:', specialDates.length)
     console.log('🔥 useSchedule: - extraClasses:', extraClasses.length)
+    console.log('🔥 useSchedule: - importedAttendance:', importedAttendance.length)
     return dbState
   }
 
@@ -448,6 +556,7 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         specialDates,
         extraClasses,
         termSettings,
+        importedAttendance,
         markAttendance,
         updateAttendance,
         getAttendanceForDate,
@@ -463,6 +572,9 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         isDateInTerm,
         getAttendanceStats,
         getTotalLecturesForSubject,
+        importAttendance,
+        getImportedAttendanceForSubject,
+        isDateLockedForSubject,
         clearAllData,
         refreshData
       }}

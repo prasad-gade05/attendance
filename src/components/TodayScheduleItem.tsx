@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { Clock, Check, X, AlertTriangle, Edit, Trash2 } from 'lucide-react'
+import { Clock, Check, X, AlertTriangle, Edit, Trash2, Lock } from 'lucide-react'
 import { Card, CardContent } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -43,14 +43,18 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   const [hasAutoSaved, setHasAutoSaved] = useState(false) // Track if we've auto-saved
 
   const { subjects, timeSlots } = useTimetable() // Also get timeSlots
-  const { markAttendance, updateAttendance, removeExtraClass } = useSchedule()
+  const { markAttendance, updateAttendance, removeExtraClass, isDateLockedForSubject, getImportedAttendanceForSubject } = useSchedule()
+  
+  // Check if this subject is locked for the current date
+  const isLocked = subject ? isDateLockedForSubject(date, subject.id) : false;
+  const importedAttendance = subject ? getImportedAttendanceForSubject(subject.id) : null;
 
   // Auto-save default attendance status when component mounts and there's no existing attendance
   useEffect(() => {
     const autoSaveDefaultAttendance = async () => {
       // Only auto-save if this is a new item (no existing attendance), we haven't auto-saved yet,
-      // and we have the required data
-      if (!attendance && !hasAutoSaved && subject && timeSlot && daySlot) {
+      // and we have the required data, and the date is not locked
+      if (!attendance && !hasAutoSaved && subject && timeSlot && daySlot && !isLocked) {
         const attendanceData = {
           date,
           timeSlotId: timeSlot.id,
@@ -70,9 +74,12 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
     }
 
     autoSaveDefaultAttendance()
-  }, [attendance, hasAutoSaved, subject, timeSlot, daySlot, date, markAttendance])
+  }, [attendance, hasAutoSaved, subject, timeSlot, daySlot, date, markAttendance, isLocked])
 
   const handleSaveAttendance = async () => {
+    // Don't allow changes if date is locked
+    if (isLocked) return;
+    
     const attendanceData = {
       date,
       timeSlotId: timeSlot.id,
@@ -90,6 +97,9 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   }
 
   const handleStatusChange = async (newStatus: 'attended' | 'missed' | 'cancelled') => {
+    // Don't allow changes if date is locked
+    if (isLocked) return;
+    
     setAttendanceStatus(newStatus)
     
     const attendanceData = {
@@ -109,6 +119,9 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   }
 
   const handleSubjectChange = async (newSubjectId: string) => {
+    // Don't allow changes if date is locked
+    if (isLocked) return;
+    
     setSelectedSubject(newSubjectId)
     setIsVerified(true)
     
@@ -129,6 +142,9 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   }
 
   const handleDeleteExtraClass = async () => {
+    // Don't allow changes if date is locked
+    if (isLocked) return;
+    
     if (extraClass) {
       await removeExtraClass(extraClass.id)
     }
@@ -150,6 +166,10 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   }
 
   const getStatusColor = () => {
+    if (isLocked) {
+      return 'bg-gray-200 border-gray-300';
+    }
+    
     switch (attendanceStatus) {
       case 'attended':
         return 'bg-green-500/10 border-green-500/20'
@@ -163,6 +183,10 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   }
 
   const getStatusIcon = () => {
+    if (isLocked) {
+      return <Lock className="h-4 w-4 text-gray-500" />;
+    }
+    
     switch (attendanceStatus) {
       case 'attended':
         return <Check className="h-4 w-4 text-green-500" />
@@ -195,6 +219,12 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                   Combined
                 </Badge>
               )}
+              {isLocked && (
+                <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                  <Lock className="h-3 w-3" />
+                  Locked
+                </Badge>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -219,7 +249,11 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 <span className="text-xs text-muted-foreground min-w-[100px]">
                   Actual:
                 </span>
-                <Select value={selectedSubject} onValueChange={handleSubjectChange}>
+                <Select 
+                  value={selectedSubject} 
+                  onValueChange={handleSubjectChange}
+                  disabled={isLocked}
+                >
                   <SelectTrigger className="w-32 text-xs h-7">
                     <SelectValue placeholder="Subject" />
                   </SelectTrigger>
@@ -255,6 +289,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 variant={attendanceStatus === 'attended' ? 'default' : 'outline'}
                 onClick={() => handleStatusChange('attended')}
                 className="h-7 px-2 text-xs"
+                disabled={isLocked}
               >
                 <Check className="h-3 w-3 mr-1" />
                 Attended
@@ -264,6 +299,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 variant={attendanceStatus === 'missed' ? 'default' : 'outline'}
                 onClick={() => handleStatusChange('missed')}
                 className="h-7 px-2 text-xs"
+                disabled={isLocked}
               >
                 <X className="h-3 w-3 mr-1" />
                 Missed
@@ -273,6 +309,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 variant={attendanceStatus === 'cancelled' ? 'default' : 'outline'}
                 onClick={() => handleStatusChange('cancelled')}
                 className="h-7 px-2 text-xs"
+                disabled={isLocked}
               >
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Cancelled
@@ -284,7 +321,12 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               <div className="flex gap-1">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="h-7 px-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="h-7 px-2"
+                      disabled={isLocked}
+                    >
                       <Trash2 className="h-3 w-3" />
                     </Button>
                   </AlertDialogTrigger>
@@ -310,8 +352,13 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
             <div className="flex items-center gap-1">
               {getStatusIcon()}
               <span className="text-xs text-muted-foreground capitalize">
-                {attendanceStatus}
+                {isLocked ? 'Locked' : attendanceStatus}
               </span>
+              {isLocked && importedAttendance && (
+                <div className="text-xs text-muted-foreground ml-1" title={`Imported up to ${importedAttendance.importDate}`}>
+                  (Imported)
+                </div>
+              )}
             </div>
           </div>
         </div>

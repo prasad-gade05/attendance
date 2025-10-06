@@ -64,3 +64,14 @@ export interface AttendanceStats {
   missedLectures: number // Lectures marked as missed
   cancelledLectures: number // Lectures marked as cancelled
 }
+
+// Add the new interface for imported attendance
+export interface ImportedAttendance {
+  id: string
+  subjectId: string
+  importDate: string // YYYY-MM-DD format
+  totalLectures: number
+  attendedLectures: number
+  missedLectures: number
+  cancelledLectures: number
+}
