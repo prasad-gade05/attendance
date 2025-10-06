@@ -177,50 +177,52 @@ const TodaySchedule: React.FC = () => {
             </p>
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowImportAttendanceDialog(true)}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Import
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSimulationDialog(true)}
-            >
-              <Calculator className="h-4 w-4 mr-2" />
-              Simulate
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAttendanceStats(true)}
-            >
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Stats
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowTermSettings(true)}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Term Settings
-            </Button>
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowImportAttendanceDialog(true)}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSimulationDialog(true)}
+              >
+                <Calculator className="h-4 w-4 mr-2" />
+                Simulate
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAttendanceStats(true)}
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Stats
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowTermSettings(true)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Term Settings
+              </Button>
+            </div>
+            
+            {/* Term Information - Moved to be next to buttons */}
+            {termSettings && (
+              <div className="text-sm text-muted-foreground whitespace-nowrap">
+                <span className="font-medium">
+                  Term: {format(parseISO(termSettings.startDate), 'MMM dd')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Term Information - Made it more minimal */}
-        {termSettings && (
-          <div className="text-center text-sm text-muted-foreground">
-            <span className="font-medium">
-              Term: {format(parseISO(termSettings.startDate), 'MMM dd')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -355,7 +357,7 @@ const TodaySchedule: React.FC = () => {
                 </div>
                 
                 {/* Action Buttons - Moved up and removed date display */}
-                <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
                     onClick={() => toggleSpecialDate('holiday')}

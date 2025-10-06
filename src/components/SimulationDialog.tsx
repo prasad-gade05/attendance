@@ -304,11 +304,11 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
           termEndDate
         );
 
-        // Initialize with 0% target (will be updated by user)
+        // Initialize with 75% target (will be updated by user)
         const simulation: SubjectSimulationData = {
           subject,
           currentStats: subjectCurrentStats,
-          targetPercentage: 0,
+          targetPercentage: 75,
           futureLectures,
           lecturesToAttend: 0,
           lecturesToSkip: 0,
@@ -651,7 +651,7 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
                                 type="number"
                                 min="0"
                                 max="100"
-                                value={data.targetPercentage || ""}
+                                value={data.targetPercentage}
                                 onChange={(e) =>
                                   updateTargetPercentage(
                                     data.subject.id,

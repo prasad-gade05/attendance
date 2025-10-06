@@ -310,10 +310,10 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
             </p>
           </div>
         ) : (
-          <Tabs defaultValue="overview" className="space-y-4">
+          <Tabs defaultValue="by-subject" className="space-y-4">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="by-subject">By Subject</TabsTrigger>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-4">
