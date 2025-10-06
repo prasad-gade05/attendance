@@ -248,7 +248,7 @@ const TodaySchedule: React.FC = () => {
                     <>
                       {scheduledLectures.map((lecture, index) => (
                         <TodayScheduleItem
-                          key={`regular-${lecture.daySlot.id}`}
+                          key={`regular-${selectedDateString}-${lecture.daySlot.id}`}
                           timeSlot={lecture.timeSlot}
                           subject={lecture.subject}
                           daySlot={lecture.daySlot}
@@ -269,7 +269,7 @@ const TodaySchedule: React.FC = () => {
                         
                         return (
                           <TodayScheduleItem
-                            key={`extra-${extraClass.id}`}
+                            key={`extra-${selectedDateString}-${extraClass.id}`}
                             timeSlot={timeSlot}
                             subject={subject}
                             daySlot={null}

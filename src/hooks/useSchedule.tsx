@@ -317,56 +317,68 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const getAttendanceStats = (subjectId?: string): AttendanceStats[] => {
     const stats: { [key: string]: AttendanceStats } = {}
     
-    // Count regular attendance records
+    // Collect all subject IDs from all records to ensure all subjects are initialized.
+    const allSubjectIds = new Set<string>();
     attendanceRecords.forEach(record => {
-      const actualSubjectId = record.actualSubjectId || record.originalSubjectId
-      if (!actualSubjectId || (subjectId && actualSubjectId !== subjectId)) return
-      
-      if (!stats[actualSubjectId]) {
-        stats[actualSubjectId] = {
-          subjectId: actualSubjectId,
+      if (record.originalSubjectId) allSubjectIds.add(record.originalSubjectId);
+      if (record.actualSubjectId) allSubjectIds.add(record.actualSubjectId);
+    });
+    extraClasses.forEach(extraClass => {
+      allSubjectIds.add(extraClass.subjectId);
+    });
+
+    // Initialize stats for all subjects.
+    allSubjectIds.forEach(id => {
+      if (!subjectId || id === subjectId) {
+        stats[id] = {
+          subjectId: id,
           totalLectures: 0,
           attendedLectures: 0,
           missedLectures: 0,
-          cancelledLectures: 0
-        }
+          cancelledLectures: 0,
+        };
       }
+    });
+
+    // Count regular attendance records based on the actual subject.
+    attendanceRecords.forEach(record => {
+      const actualSubjectId = record.actualSubjectId || record.originalSubjectId
+      if (!actualSubjectId) return
       
-      stats[actualSubjectId].totalLectures++
-      
-      switch (record.status) {
-        case 'attended':
-          stats[actualSubjectId].attendedLectures++
-          break
-        case 'missed':
-          stats[actualSubjectId].missedLectures++
-          break
-        case 'cancelled':
-          stats[actualSubjectId].cancelledLectures++
-          break
+      // If a filter is applied, only consider the filtered subject.
+      if (subjectId && actualSubjectId !== subjectId) return
+
+      if (stats[actualSubjectId]) {
+        stats[actualSubjectId].totalLectures++
+        
+        switch (record.status) {
+          case 'attended':
+            stats[actualSubjectId].attendedLectures++
+            break
+          case 'missed':
+            stats[actualSubjectId].missedLectures++
+            break
+          case 'cancelled':
+            stats[actualSubjectId].cancelledLectures++
+            break
+        }
       }
     })
     
-    // Count extra classes as additional lectures conducted (attended)
+    // Count extra classes as additional lectures conducted (attended).
     extraClasses.forEach(extraClass => {
       if (subjectId && extraClass.subjectId !== subjectId) return
       
-      if (!stats[extraClass.subjectId]) {
-        stats[extraClass.subjectId] = {
-          subjectId: extraClass.subjectId,
-          totalLectures: 0,
-          attendedLectures: 0,
-          missedLectures: 0,
-          cancelledLectures: 0
-        }
+      if (stats[extraClass.subjectId]) {
+        stats[extraClass.subjectId].totalLectures++
+        stats[extraClass.subjectId].attendedLectures++
       }
-      
-      // Extra classes count as both total lectures and attended lectures
-      stats[extraClass.subjectId].totalLectures++
-      stats[extraClass.subjectId].attendedLectures++
     })
     
-    return Object.values(stats)
+    if (subjectId) {
+        return stats[subjectId] ? [stats[subjectId]] : [];
+    }
+    return Object.values(stats);
   }
 
   const getTotalLecturesForSubject = async (subjectId: string, fromDate?: string, toDate?: string): Promise<number> => {

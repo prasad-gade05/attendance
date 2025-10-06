@@ -156,13 +156,6 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
               } else {
                 statsMap[actualSubjectId].cancelledLectures++
               }
-              
-              // If subject was changed, adjust the original subject's count
-              if (attendanceRecord.actualSubjectId && 
-                  attendanceRecord.actualSubjectId !== attendanceRecord.originalSubjectId &&
-                  attendanceRecord.originalSubjectId) {
-                statsMap[attendanceRecord.originalSubjectId].totalLectures--
-              }
             } else {
               // No attendance record - count as total lecture but not attended/missed
               statsMap[subjectId].totalLectures++
