@@ -102,7 +102,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
       // Process each subject to handle imported attendance
       for (const subject of subjects) {
         const imported = getImportedAttendanceForSubject(subject.id);
-        
+
         if (imported) {
           // Use imported data as base
           stats[subject.id] = {
@@ -249,7 +249,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
         Object.values(stats).filter((stat) => stat.totalLectures > 0)
       );
     } catch (error) {
-      console.error("Failed to calculate detailed stats:", error);
+      // Error handling without console logging
     } finally {
       setLoading(false);
     }
@@ -423,7 +423,9 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                         (s) => s.id === stat.subjectId
                       );
                       const percentage = getAttendancePercentage(stat);
-                      const imported = getImportedAttendanceForSubject(stat.subjectId);
+                      const imported = getImportedAttendanceForSubject(
+                        stat.subjectId
+                      );
 
                       if (!subject) return null;
 

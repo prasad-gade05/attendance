@@ -21,6 +21,7 @@ function App() {
                   <Route path="/" element={<TodaySchedule />} />
                   <Route path="/timetable" element={<Timetable />} />
                   <Route path="/schedule" element={<TodaySchedule />} />
+                  <Route path="/attendance" element={<Navigate to="/schedule" />} />
                 </Routes>
               </main>
             </div>

@@ -75,7 +75,6 @@ const ExtraClassDialog: React.FC<ExtraClassDialogProps> = ({
       // Refresh the page after adding an extra class
       window.location.reload()
     } catch (error) {
-      console.error('Failed to add extra class:', error)
       alert('Failed to add extra class. Please try again.')
     }
   }

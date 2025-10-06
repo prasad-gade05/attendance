@@ -23,46 +23,30 @@ const TermSettingsDialog: React.FC<TermSettingsDialogProps> = ({
   const { termSettings, setTermSettings } = useSchedule()
 
   useEffect(() => {
-    console.log('🔥 TermSettingsDialog: useEffect triggered')
-    console.log('🔥 TermSettingsDialog: termSettings from hook =', termSettings)
     if (termSettings) {
-      console.log('🔥 TermSettingsDialog: Setting form values from termSettings')
-      console.log('🔥 TermSettingsDialog: startDate =', termSettings.startDate)
-      console.log('🔥 TermSettingsDialog: endDate =', termSettings.endDate)
       setStartDate(termSettings.startDate)
       setEndDate(termSettings.endDate)
-    } else {
-      console.log('🔥 TermSettingsDialog: No termSettings found, clearing form')
     }
   }, [termSettings])
 
   const handleSubmit = async () => {
-    console.log('🔥 TermSettingsDialog: handleSubmit called')
-    console.log('🔥 TermSettingsDialog: startDate =', startDate)
-    console.log('🔥 TermSettingsDialog: endDate =', endDate)
-    
     if (!startDate || !endDate) {
-      console.log('🔥 TermSettingsDialog: Validation failed - missing dates')
       alert('Please select both start and end dates')
       return
     }
 
     if (startDate >= endDate) {
-      console.log('🔥 TermSettingsDialog: Validation failed - end date not after start date')
       alert('End date must be after start date')
       return
     }
 
-    console.log('🔥 TermSettingsDialog: Validation passed, calling setTermSettings')
     try {
       await setTermSettings({
         startDate,
         endDate
       })
-      console.log('🔥 TermSettingsDialog: setTermSettings completed successfully')
       onOpenChange(false)
     } catch (error) {
-      console.error('🔥 TermSettingsDialog: Failed to save term settings:', error)
       alert('Failed to save term settings. Please try again.')
     }
   }

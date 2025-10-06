@@ -104,8 +104,6 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDate, onDateSel
               const selectedDateObj = new Date(cellDay);
               // Reset time to midnight to avoid timezone issues
               selectedDateObj.setHours(0, 0, 0, 0);
-              console.log('Calendar date clicked:', selectedDateObj);
-              console.log('Formatted date:', format(selectedDateObj, 'yyyy-MM-dd'));
               onDateSelect(selectedDateObj);
             }}
           >

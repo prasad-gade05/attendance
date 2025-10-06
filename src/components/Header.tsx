@@ -1,39 +1,35 @@
-import React, { useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Button } from '../components/ui/button'
-import { useTimetable } from '../hooks/useTimetable'
-import { useSchedule } from '../hooks/useSchedule'
-import { Trash2, Calendar, CalendarDays, Grid3X3 } from 'lucide-react'
-import ThemeSwitcher from './ThemeSwitcher'
-import ConfirmDialog from './ConfirmDialog'
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button } from "../components/ui/button";
+import { useTimetable } from "../hooks/useTimetable";
+import { useSchedule } from "../hooks/useSchedule";
+import { Trash2, Calendar, CalendarDays, Grid3X3 } from "lucide-react";
+import ThemeSwitcher from "./ThemeSwitcher";
+import ConfirmDialog from "./ConfirmDialog";
 
 const Header = () => {
-  const { clearAllData: clearTimetableData, loadData: loadTimetableData } = useTimetable()
-  const { clearAllData: clearScheduleData, refreshData: refreshScheduleData } = useSchedule()
-  const [showClearDialog, setShowClearDialog] = useState(false)
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { clearAllData: clearTimetableData, loadData: loadTimetableData } =
+    useTimetable();
+  const { clearAllData: clearScheduleData, refreshData: refreshScheduleData } =
+    useSchedule();
+  const [showClearDialog, setShowClearDialog] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleClearAllData = async () => {
     try {
       // Clear all data from both providers
-      await Promise.all([
-        clearTimetableData(),
-        clearScheduleData()
-      ])
-      
+      await Promise.all([clearTimetableData(), clearScheduleData()]);
+
       // Refresh data in both providers
-      await Promise.all([
-        loadTimetableData(),
-        refreshScheduleData()
-      ])
-      
+      await Promise.all([loadTimetableData(), refreshScheduleData()]);
+
       // Perform a full page refresh to ensure UI consistency
-      window.location.reload()
+      window.location.reload();
     } catch (error) {
-      console.error('Failed to clear all data:', error)
+      // Error handling without console logging
     }
-  }
+  };
 
   return (
     <header className="border-b">
@@ -58,28 +54,28 @@ const Header = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 mr-4">
             <Button
-              variant={location.pathname === '/schedule' ? 'default' : 'ghost'}
+              variant={location.pathname === "/schedule" ? "default" : "ghost"}
               size="sm"
-              onClick={() => navigate('/schedule')}
+              onClick={() => navigate("/schedule")}
             >
               <CalendarDays className="h-4 w-4 mr-2" />
               Today's Schedule
             </Button>
             <Button
-              variant={location.pathname === '/timetable' ? 'default' : 'ghost'}
+              variant={location.pathname === "/timetable" ? "default" : "ghost"}
               size="sm"
-              onClick={() => navigate('/timetable')}
+              onClick={() => navigate("/timetable")}
             >
               <Grid3X3 className="h-4 w-4 mr-2" />
               Timetable
             </Button>
           </div>
-          
+
           <ThemeSwitcher />
-          
-          <Button 
-            variant="destructive" 
-            size="sm" 
+
+          <Button
+            variant="destructive"
+            size="sm"
             onClick={() => setShowClearDialog(true)}
           >
             <Trash2 className="h-4 w-4 mr-2" />
@@ -87,7 +83,7 @@ const Header = () => {
           </Button>
         </div>
       </div>
-      
+
       <ConfirmDialog
         open={showClearDialog}
         onOpenChange={setShowClearDialog}
@@ -98,7 +94,7 @@ const Header = () => {
         variant="destructive"
       />
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

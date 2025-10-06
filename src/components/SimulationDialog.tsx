@@ -131,7 +131,7 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
       // Process each subject to handle imported attendance
       for (const subject of subjects) {
         const imported = getImportedAttendanceForSubject(subject.id);
-        
+
         if (imported) {
           // Use imported data as base
           statsMap[subject.id] = {
@@ -335,7 +335,6 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
 
       setSimulationData(simulationResults);
     } catch (err) {
-      console.error("Failed to calculate simulation data:", err);
       setError("Failed to calculate simulation data. Please try again.");
     } finally {
       setLoading(false);
@@ -600,7 +599,9 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
                   const currentPercentage = getCurrentAttendancePercentage(
                     data.currentStats
                   );
-                  const imported = getImportedAttendanceForSubject(data.subject.id);
+                  const imported = getImportedAttendanceForSubject(
+                    data.subject.id
+                  );
 
                   return (
                     <Card key={data.subject.id}>

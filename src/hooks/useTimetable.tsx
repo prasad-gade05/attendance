@@ -45,7 +45,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setDaySlots(loadedDaySlots)
       setCombinedSlots(loadedCombinedSlots)
     } catch (error) {
-      console.error('Failed to load data:', error)
+      // Error handling without console logging
     }
   }
 
@@ -56,7 +56,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       await db.subjects.add(newSubject)
       setSubjects(prev => [...prev, newSubject])
     } catch (error) {
-      console.error('Failed to add subject:', error)
+      // Error handling without console logging
     }
   }
 
@@ -65,7 +65,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       await db.subjects.update(id, subject)
       setSubjects(prev => prev.map(s => s.id === id ? { ...s, ...subject } : s))
     } catch (error) {
-      console.error('Failed to update subject:', error)
+      // Error handling without console logging
     }
   }
 
@@ -87,7 +87,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         await uncombineSlot(cs.id)
       }
     } catch (error) {
-      console.error('Failed to delete subject:', error)
+      // Error handling without console logging
     }
   }
 
@@ -116,7 +116,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       
       setDaySlots(prev => [...prev, ...newDaySlots])
     } catch (error) {
-      console.error('Failed to add time slot:', error)
+      // Error handling without console logging
     }
   }
 
@@ -144,7 +144,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         !cs.daySlotIds.some(dsId => daySlotIdsToDelete.includes(dsId))
       ))
     } catch (error) {
-      console.error('Failed to delete time slot:', error)
+      // Error handling without console logging
     }
   }
 
@@ -158,7 +158,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ))
       }
     } catch (error) {
-      console.error('Failed to assign subject to slot:', error)
+      // Error handling without console logging
     }
   }
 
@@ -197,7 +197,6 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       await db.combinedSlots.add(combinedSlot)
       setCombinedSlots(prev => [...prev, combinedSlot])
     } catch (error) {
-      console.error('Failed to combine slots:', error)
       throw error
     }
   }
@@ -207,7 +206,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       await db.combinedSlots.delete(combinedSlotId)
       setCombinedSlots(prev => prev.filter(cs => cs.id !== combinedSlotId))
     } catch (error) {
-      console.error('Failed to uncombine slot:', error)
+      // Error handling without console logging
     }
   }
 
@@ -219,7 +218,7 @@ export const TimetableProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setDaySlots([])
       setCombinedSlots([])
     } catch (error) {
-      console.error('Failed to clear all data:', error)
+      // Error handling without console logging
     }
   }
 

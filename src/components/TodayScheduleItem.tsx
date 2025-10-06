@@ -1,25 +1,55 @@
-import React, { useState, useEffect } from 'react'
-import { format } from 'date-fns'
-import { Clock, Check, X, AlertTriangle, Edit, Trash2, Lock } from 'lucide-react'
-import { Card, CardContent } from './ui/card'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog'
-import { useTimetable } from '../hooks/useTimetable'
-import { useSchedule } from '../hooks/useSchedule'
-import { Subject, TimeSlot, DaySlot, AttendanceRecord, ExtraClass } from '../types'
+import React, { useState, useEffect } from "react";
+import { format } from "date-fns";
+import {
+  Clock,
+  Check,
+  X,
+  AlertTriangle,
+  Edit,
+  Trash2,
+  Lock,
+} from "lucide-react";
+import { Card, CardContent } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
+import { useTimetable } from "../hooks/useTimetable";
+import { useSchedule } from "../hooks/useSchedule";
+import {
+  Subject,
+  TimeSlot,
+  DaySlot,
+  AttendanceRecord,
+  ExtraClass,
+} from "../types";
 
 interface TodayScheduleItemProps {
-  timeSlot: TimeSlot
-  subject: Subject | null
-  daySlot: DaySlot | null
-  isCombined: boolean
-  combinedSlots?: DaySlot[]
-  date: string
-  attendance?: AttendanceRecord
-  isExtraClass: boolean
-  extraClass?: ExtraClass
+  timeSlot: TimeSlot;
+  subject: Subject | null;
+  daySlot: DaySlot | null;
+  isCombined: boolean;
+  combinedSlots?: DaySlot[];
+  date: string;
+  attendance?: AttendanceRecord;
+  isExtraClass: boolean;
+  extraClass?: ExtraClass;
 }
 
 const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
@@ -31,175 +61,203 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   date,
   attendance,
   isExtraClass,
-  extraClass
+  extraClass,
 }) => {
   const [selectedSubject, setSelectedSubject] = useState(
-    attendance?.actualSubjectId || subject?.id || ''
-  )
-  const [attendanceStatus, setAttendanceStatus] = useState<'attended' | 'missed' | 'cancelled'>(
-    attendance?.status || 'attended'
-  )
-  const [isVerified, setIsVerified] = useState(attendance?.isVerified || false)
-  const [hasAutoSaved, setHasAutoSaved] = useState(false) // Track if we've auto-saved
+    attendance?.actualSubjectId || subject?.id || ""
+  );
+  const [attendanceStatus, setAttendanceStatus] = useState<
+    "attended" | "missed" | "cancelled"
+  >(attendance?.status || "attended");
+  const [isVerified, setIsVerified] = useState(attendance?.isVerified || false);
+  const [hasAutoSaved, setHasAutoSaved] = useState(false); // Track if we've auto-saved
 
-  const { subjects, timeSlots } = useTimetable() // Also get timeSlots
-  const { markAttendance, updateAttendance, removeExtraClass, isDateLockedForSubject, getImportedAttendanceForSubject } = useSchedule()
-  
+  const { subjects, timeSlots } = useTimetable(); // Also get timeSlots
+  const {
+    markAttendance,
+    updateAttendance,
+    removeExtraClass,
+    isDateLockedForSubject,
+    getImportedAttendanceForSubject,
+  } = useSchedule();
+
   // Check if this subject is locked for the current date
   const isLocked = subject ? isDateLockedForSubject(date, subject.id) : false;
-  const importedAttendance = subject ? getImportedAttendanceForSubject(subject.id) : null;
+  const importedAttendance = subject
+    ? getImportedAttendanceForSubject(subject.id)
+    : null;
 
   // Auto-save default attendance status when component mounts and there's no existing attendance
   useEffect(() => {
     const autoSaveDefaultAttendance = async () => {
       // Only auto-save if this is a new item (no existing attendance), we haven't auto-saved yet,
       // and we have the required data, and the date is not locked
-      if (!attendance && !hasAutoSaved && subject && timeSlot && daySlot && !isLocked) {
+      if (
+        !attendance &&
+        !hasAutoSaved &&
+        subject &&
+        timeSlot &&
+        daySlot &&
+        !isLocked
+      ) {
         const attendanceData = {
           date,
           timeSlotId: timeSlot.id,
           originalSubjectId: subject.id,
           actualSubjectId: subject.id,
-          status: 'attended' as 'attended', // Default to attended with correct type
-          isVerified: false
-        }
+          status: "attended" as "attended", // Default to attended with correct type
+          isVerified: false,
+        };
 
         try {
-          await markAttendance(attendanceData)
-          setHasAutoSaved(true) // Mark that we've auto-saved
+          await markAttendance(attendanceData);
+          setHasAutoSaved(true); // Mark that we've auto-saved
         } catch (error) {
-          console.error('Failed to auto-save default attendance:', error)
+          // Error handling without console logging
         }
       }
-    }
+    };
 
-    autoSaveDefaultAttendance()
-  }, [attendance, hasAutoSaved, subject, timeSlot, daySlot, date, markAttendance, isLocked])
+    autoSaveDefaultAttendance();
+  }, [
+    attendance,
+    hasAutoSaved,
+    subject,
+    timeSlot,
+    daySlot,
+    date,
+    markAttendance,
+    isLocked,
+  ]);
 
   const handleSaveAttendance = async () => {
     // Don't allow changes if date is locked
     if (isLocked) return;
-    
+
     const attendanceData = {
       date,
       timeSlotId: timeSlot.id,
       originalSubjectId: subject?.id,
       actualSubjectId: selectedSubject || subject?.id,
       status: attendanceStatus,
-      isVerified: selectedSubject !== subject?.id || isVerified
-    }
+      isVerified: selectedSubject !== subject?.id || isVerified,
+    };
 
     if (attendance) {
-      await updateAttendance(attendance.id, attendanceData)
+      await updateAttendance(attendance.id, attendanceData);
     } else {
-      await markAttendance(attendanceData)
+      await markAttendance(attendanceData);
     }
-  }
+  };
 
-  const handleStatusChange = async (newStatus: 'attended' | 'missed' | 'cancelled') => {
+  const handleStatusChange = async (
+    newStatus: "attended" | "missed" | "cancelled"
+  ) => {
     // Don't allow changes if date is locked
     if (isLocked) return;
-    
-    setAttendanceStatus(newStatus)
-    
+
+    setAttendanceStatus(newStatus);
+
     const attendanceData = {
       date,
       timeSlotId: timeSlot.id,
       originalSubjectId: subject?.id,
       actualSubjectId: selectedSubject || subject?.id,
       status: newStatus,
-      isVerified: selectedSubject !== subject?.id || isVerified
-    }
+      isVerified: selectedSubject !== subject?.id || isVerified,
+    };
 
     if (attendance) {
-      await updateAttendance(attendance.id, attendanceData)
+      await updateAttendance(attendance.id, attendanceData);
     } else {
-      await markAttendance(attendanceData)
+      await markAttendance(attendanceData);
     }
-  }
+  };
 
   const handleSubjectChange = async (newSubjectId: string) => {
     // Don't allow changes if date is locked
     if (isLocked) return;
-    
-    setSelectedSubject(newSubjectId)
-    setIsVerified(true)
-    
+
+    setSelectedSubject(newSubjectId);
+    setIsVerified(true);
+
     const attendanceData = {
       date,
       timeSlotId: timeSlot.id,
       originalSubjectId: subject?.id,
       actualSubjectId: newSubjectId,
       status: attendanceStatus,
-      isVerified: true
-    }
+      isVerified: true,
+    };
 
     if (attendance) {
-      await updateAttendance(attendance.id, attendanceData)
+      await updateAttendance(attendance.id, attendanceData);
     } else {
-      await markAttendance(attendanceData)
+      await markAttendance(attendanceData);
     }
-  }
+  };
 
   const handleDeleteExtraClass = async () => {
     // Don't allow changes if date is locked
     if (isLocked) return;
-    
+
     if (extraClass) {
-      await removeExtraClass(extraClass.id)
+      await removeExtraClass(extraClass.id);
     }
-  }
+  };
 
   const getTimeRange = () => {
     if (isCombined && combinedSlots) {
       const allTimeSlots = combinedSlots
-        .map(cs => timeSlots.find(ts => ts.id === cs.timeSlotId))
+        .map((cs) => timeSlots.find((ts) => ts.id === cs.timeSlotId))
         .filter(Boolean)
-        .sort((a, b) => a!.startTime.localeCompare(b!.startTime))
-      
+        .sort((a, b) => a!.startTime.localeCompare(b!.startTime));
+
       if (allTimeSlots.length > 0) {
-        return `${allTimeSlots[0]!.startTime} - ${allTimeSlots[allTimeSlots.length - 1]!.endTime}`
+        return `${allTimeSlots[0]!.startTime} - ${
+          allTimeSlots[allTimeSlots.length - 1]!.endTime
+        }`;
       }
     }
-    
-    return `${timeSlot.startTime} - ${timeSlot.endTime}`
-  }
+
+    return `${timeSlot.startTime} - ${timeSlot.endTime}`;
+  };
 
   const getStatusColor = () => {
     if (isLocked) {
-      return 'bg-gray-200 border-gray-300';
+      return "bg-gray-200 border-gray-300";
     }
-    
+
     switch (attendanceStatus) {
-      case 'attended':
-        return 'bg-green-500/10 border-green-500/20'
-      case 'missed':
-        return 'bg-red-500/10 border-red-500/20'
-      case 'cancelled':
-        return 'bg-yellow-500/10 border-yellow-500/20'
+      case "attended":
+        return "bg-green-500/10 border-green-500/20";
+      case "missed":
+        return "bg-red-500/10 border-red-500/20";
+      case "cancelled":
+        return "bg-yellow-500/10 border-yellow-500/20";
       default:
-        return 'bg-gray-500/10 border-gray-500/20'
+        return "bg-gray-500/10 border-gray-500/20";
     }
-  }
+  };
 
   const getStatusIcon = () => {
     if (isLocked) {
       return <Lock className="h-4 w-4 text-gray-500" />;
     }
-    
-    switch (attendanceStatus) {
-      case 'attended':
-        return <Check className="h-4 w-4 text-green-500" />
-      case 'missed':
-        return <X className="h-4 w-4 text-red-500" />
-      case 'cancelled':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />
-      default:
-        return null
-    }
-  }
 
-  if (!subject) return null
+    switch (attendanceStatus) {
+      case "attended":
+        return <Check className="h-4 w-4 text-green-500" />;
+      case "missed":
+        return <X className="h-4 w-4 text-red-500" />;
+      case "cancelled":
+        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+      default:
+        return null;
+    }
+  };
+
+  if (!subject) return null;
 
   return (
     <Card className={`transition-colors ${getStatusColor()}`}>
@@ -220,25 +278,28 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 </Badge>
               )}
               {isLocked && (
-                <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                <Badge
+                  variant="secondary"
+                  className="text-xs flex items-center gap-1"
+                >
                   <Lock className="h-3 w-3" />
                   Locked
                 </Badge>
               )}
             </div>
-            
+
             <div className="space-y-2">
               {/* Subject Selection */}
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground min-w-[100px]">
                   Scheduled:
                 </span>
-                <div 
+                <div
                   className="px-2 py-1 rounded text-xs font-medium border min-w-0 truncate"
-                  style={{ 
-                    backgroundColor: subject.color + '20',
+                  style={{
+                    backgroundColor: subject.color + "20",
                     color: subject.color,
-                    borderColor: subject.color + '40'
+                    borderColor: subject.color + "40",
                   }}
                 >
                   {subject.name}
@@ -249,8 +310,8 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 <span className="text-xs text-muted-foreground min-w-[100px]">
                   Actual:
                 </span>
-                <Select 
-                  value={selectedSubject} 
+                <Select
+                  value={selectedSubject}
                   onValueChange={handleSubjectChange}
                   disabled={isLocked}
                 >
@@ -261,7 +322,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                     {subjects.map((subj) => (
                       <SelectItem key={subj.id} value={subj.id}>
                         <div className="flex items-center gap-2">
-                          <div 
+                          <div
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: subj.color }}
                           />
@@ -271,7 +332,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
-                
+
                 {selectedSubject !== subject.id && (
                   <Badge variant="outline" className="text-xs">
                     Changed
@@ -286,8 +347,10 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
             <div className="flex gap-1">
               <Button
                 size="sm"
-                variant={attendanceStatus === 'attended' ? 'default' : 'outline'}
-                onClick={() => handleStatusChange('attended')}
+                variant={
+                  attendanceStatus === "attended" ? "default" : "outline"
+                }
+                onClick={() => handleStatusChange("attended")}
                 className="h-7 px-2 text-xs"
                 disabled={isLocked}
               >
@@ -296,8 +359,8 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               </Button>
               <Button
                 size="sm"
-                variant={attendanceStatus === 'missed' ? 'default' : 'outline'}
-                onClick={() => handleStatusChange('missed')}
+                variant={attendanceStatus === "missed" ? "default" : "outline"}
+                onClick={() => handleStatusChange("missed")}
                 className="h-7 px-2 text-xs"
                 disabled={isLocked}
               >
@@ -306,8 +369,10 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               </Button>
               <Button
                 size="sm"
-                variant={attendanceStatus === 'cancelled' ? 'default' : 'outline'}
-                onClick={() => handleStatusChange('cancelled')}
+                variant={
+                  attendanceStatus === "cancelled" ? "default" : "outline"
+                }
+                onClick={() => handleStatusChange("cancelled")}
                 className="h-7 px-2 text-xs"
                 disabled={isLocked}
               >
@@ -321,9 +386,9 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               <div className="flex gap-1">
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="h-7 px-2"
                       disabled={isLocked}
                     >
@@ -334,7 +399,8 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete Extra Class</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Are you sure you want to delete this extra class? This action cannot be undone.
+                        Are you sure you want to delete this extra class? This
+                        action cannot be undone.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -352,10 +418,13 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
             <div className="flex items-center gap-1">
               {getStatusIcon()}
               <span className="text-xs text-muted-foreground capitalize">
-                {isLocked ? 'Locked' : attendanceStatus}
+                {isLocked ? "Locked" : attendanceStatus}
               </span>
               {isLocked && importedAttendance && (
-                <div className="text-xs text-muted-foreground ml-1" title={`Imported up to ${importedAttendance.importDate}`}>
+                <div
+                  className="text-xs text-muted-foreground ml-1"
+                  title={`Imported up to ${importedAttendance.importDate}`}
+                >
                   (Imported)
                 </div>
               )}
@@ -364,7 +433,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default TodayScheduleItem
+export default TodayScheduleItem;
