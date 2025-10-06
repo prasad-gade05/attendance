@@ -144,13 +144,17 @@ const TodaySchedule: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
+    <div className="container mx-auto px-4 max-w-7xl">
+      {/* Header Section - Moved all header elements together */}
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Today's Schedule</h1>
+            {/* Removed "Today's Schedule" label as requested */}
+            <h1 className="text-2xl font-bold">
+              {format(selectedDate, 'EEEE')}
+            </h1>
             <p className="text-muted-foreground">
-              {format(selectedDate, 'EEEE, MMMM do, yyyy')}
+              {format(selectedDate, 'MMMM do, yyyy')}
             </p>
           </div>
           
@@ -182,20 +186,13 @@ const TodaySchedule: React.FC = () => {
           </div>
         </div>
 
-        {/* Term Information moved to top */}
+        {/* Term Information - Made it more minimal */}
         {termSettings && (
-          <Card className="mb-6">
-            <CardContent className="py-3">
-              <div className="flex items-center justify-center gap-6 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">Term:</span>
-                  <span className="font-medium">
-                    {format(parseISO(termSettings.startDate), 'MMM dd, yyyy')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="text-center text-sm text-muted-foreground">
+            <span className="font-medium">
+              Term: {format(parseISO(termSettings.startDate), 'MMM dd')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
+            </span>
+          </div>
         )}
       </div>
 
@@ -206,7 +203,7 @@ const TodaySchedule: React.FC = () => {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Schedule for {format(selectedDate, 'EEEE')}
+                Schedule
               </CardTitle>
               <Button
                 size="sm"
@@ -237,11 +234,6 @@ const TodaySchedule: React.FC = () => {
                   {!termSettings && (
                     <div className="text-sm text-muted-foreground mt-2">
                       Term settings not configured. Please set term dates in Term Settings.
-                    </div>
-                  )}
-                  {termSettings && (
-                    <div className="text-sm text-muted-foreground mt-2">
-                      Term: {format(parseISO(termSettings.startDate), 'MMM dd, yyyy')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
                     </div>
                   )}
                 </div>

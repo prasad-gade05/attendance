@@ -11,16 +11,16 @@ interface ColorPickerProps {
 }
 
 const predefinedColors = [
-  { color: '#dc2626', name: 'Red' },      // More vibrant red
-  { color: '#ea580c', name: 'Orange' },   // More vibrant orange
-  { color: '#d97706', name: 'Amber' },    // More vibrant amber
-  { color: '#ca8a04', name: 'Yellow' },   // More vibrant yellow
-  { color: '#16a34a', name: 'Green' },    // More vibrant green
-  { color: '#0891b2', name: 'Cyan' },     // More vibrant cyan
-  { color: '#0284c7', name: 'Blue' },     // More vibrant blue
-  { color: '#4f46e5', name: 'Indigo' },   // More vibrant indigo
-  { color: '#7c3aed', name: 'Violet' },   // More vibrant violet
-  { color: '#c026d3', name: 'Fuchsia' },  // More vibrant fuchsia
+  { color: '#ef4444', name: 'Red' },      // Modern vibrant red
+  { color: '#f97316', name: 'Orange' },   // Modern vibrant orange
+  { color: '#eab308', name: 'Yellow' },  // Modern vibrant yellow
+  { color: '#22c55e', name: 'Green' },   // Modern vibrant green
+  { color: '#10b981', name: 'Emerald' }, // Modern vibrant emerald
+  { color: '#06b6d4', name: 'Cyan' },    // Modern vibrant cyan
+  { color: '#3b82f6', name: 'Blue' },    // Modern vibrant blue
+  { color: '#6366f1', name: 'Indigo' },  // Modern vibrant indigo
+  { color: '#8b5cf6', name: 'Violet' },  // Modern vibrant violet
+  { color: '#ec4899', name: 'Pink' },    // Modern vibrant pink
 ]
 
 const ColorPicker: React.FC<ColorPickerProps> = ({

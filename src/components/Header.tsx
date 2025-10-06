@@ -57,20 +57,20 @@ const Header = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 mr-4">
             <Button
-              variant={location.pathname === '/timetable' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => navigate('/timetable')}
-            >
-              <Grid3X3 className="h-4 w-4 mr-2" />
-              Timetable
-            </Button>
-            <Button
               variant={location.pathname === '/schedule' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => navigate('/schedule')}
             >
               <CalendarDays className="h-4 w-4 mr-2" />
               Today's Schedule
+            </Button>
+            <Button
+              variant={location.pathname === '/timetable' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => navigate('/timetable')}
+            >
+              <Grid3X3 className="h-4 w-4 mr-2" />
+              Timetable
             </Button>
           </div>
           
