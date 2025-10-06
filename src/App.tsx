@@ -18,7 +18,7 @@ function App() {
               <Header />
               <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in relative z-10">
                 <Routes>
-                  <Route path="/" element={<Navigate to="/schedule" replace />} />
+                  <Route path="/" element={<TodaySchedule />} />
                   <Route path="/timetable" element={<Timetable />} />
                   <Route path="/schedule" element={<TodaySchedule />} />
                 </Routes>
