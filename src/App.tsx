@@ -1,5 +1,4 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { TimetableProvider } from './hooks/useTimetable'
 import { ScheduleProvider } from './hooks/useSchedule'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -13,19 +12,17 @@ function App() {
     <ThemeProvider>
       <TimetableProvider>
         <ScheduleProvider>
-          <Router basename="/attendance">
-            <div className="min-h-screen bg-background relative">
-              <Header />
-              <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in relative z-10">
-                <Routes>
-                  <Route path="/" element={<TodaySchedule />} />
-                  <Route path="/timetable" element={<Timetable />} />
-                  <Route path="/schedule" element={<TodaySchedule />} />
-                  <Route path="/attendance" element={<Navigate to="/schedule" />} />
-                </Routes>
-              </main>
-            </div>
-          </Router>
+          <div className="min-h-screen bg-background relative">
+            <Header />
+            <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in relative z-10">
+              <section id="schedule">
+                <TodaySchedule />
+              </section>
+              <section id="timetable" className="mt-12">
+                <Timetable />
+              </section>
+            </main>
+          </div>
         </ScheduleProvider>
       </TimetableProvider>
     </ThemeProvider>

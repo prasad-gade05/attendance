@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { useTimetable } from "../hooks/useTimetable";
 import { useSchedule } from "../hooks/useSchedule";
@@ -14,8 +13,6 @@ const Header = () => {
   const { clearAllData: clearScheduleData, refreshData: refreshScheduleData } =
     useSchedule();
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const handleClearAllData = async () => {
     try {
@@ -29,6 +26,13 @@ const Header = () => {
       window.location.reload();
     } catch (error) {
       // Error handling without console logging
+    }
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -55,17 +59,17 @@ const Header = () => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 mr-4">
             <Button
-              variant={location.pathname === "/schedule" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
-              onClick={() => navigate("/schedule")}
+              onClick={() => scrollToSection("schedule")}
             >
               <CalendarDays className="h-4 w-4 mr-2" />
               Today's Schedule
             </Button>
             <Button
-              variant={location.pathname === "/timetable" ? "default" : "ghost"}
+              variant="ghost"
               size="sm"
-              onClick={() => navigate("/timetable")}
+              onClick={() => scrollToSection("timetable")}
             >
               <Grid3X3 className="h-4 w-4 mr-2" />
               Timetable
