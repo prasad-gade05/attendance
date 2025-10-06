@@ -330,6 +330,21 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
             maxTotal > 0 ? Math.round((minAttended / maxTotal) * 100) : 0;
         }
 
+        // Calculate required lectures for the default 75% target
+        const {
+          lecturesToAttend,
+          lecturesToSkip,
+          isTargetAchievable,
+          errorMessage,
+        } = calculateRequiredLectures(simulation, 75);
+
+        simulation.lecturesToAttend = lecturesToAttend;
+        simulation.lecturesToSkip = lecturesToSkip;
+        simulation.isTargetAchievable = isTargetAchievable;
+        if (errorMessage) {
+          simulation.errorMessage = errorMessage;
+        }
+
         simulationResults.push(simulation);
       }
 
