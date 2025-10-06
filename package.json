@@ -1,8 +1,8 @@
 {
-  "name": "basic-app-template",
+  "name": "timeflow",
   "type": "module",
   "packageManager": "pnpm@8.10.0",
-  "homepage": "https://prasad-gade05.github.io/app_template",
+  "homepage": "https://prasad-gade05.github.io/timetable",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
