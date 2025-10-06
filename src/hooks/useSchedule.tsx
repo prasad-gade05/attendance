@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { db } from '../lib/db'
 import { AttendanceRecord, SpecialDate, ExtraClass, TermSettings, AttendanceStats } from '../types'
-import { format, isWithinInterval, parseISO, getDay } from 'date-fns'
+import { format, isWithinInterval, parseISO, getDay, isSameDay } from 'date-fns'
 
 interface ScheduleContextType {
   attendanceRecords: AttendanceRecord[]
@@ -282,17 +282,35 @@ export const ScheduleProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   const isDateInTerm = (date: string): boolean => {
-    if (!termSettings) return false
+    console.log('🔥 useSchedule: isDateInTerm called with date:', date);
+    console.log('🔥 useSchedule: current termSettings:', termSettings);
+    
+    // If no term settings exist, we can't determine if date is in term
+    if (!termSettings) {
+      console.log('🔥 useSchedule: No term settings found, returning false');
+      return false;
+    }
     
     try {
-      const targetDate = parseISO(date)
-      const startDate = parseISO(termSettings.startDate)
-      const endDate = parseISO(termSettings.endDate)
+      const targetDate = parseISO(date);
+      const startDate = parseISO(termSettings.startDate);
+      const endDate = parseISO(termSettings.endDate);
       
-      return isWithinInterval(targetDate, { start: startDate, end: endDate })
+      console.log('🔥 useSchedule: targetDate:', targetDate);
+      console.log('🔥 useSchedule: startDate:', startDate);
+      console.log('🔥 useSchedule: endDate:', endDate);
+      
+      // Include the start and end dates in the term period
+      const result = isWithinInterval(targetDate, { start: startDate, end: endDate }) || 
+                   isSameDay(targetDate, startDate) || 
+                   isSameDay(targetDate, endDate);
+                   
+      console.log('🔥 useSchedule: isWithinInterval result:', result);
+      
+      return result;
     } catch (error) {
-      console.error('Failed to check if date is in term:', error)
-      return false
+      console.error('Failed to check if date is in term:', error);
+      return false;
     }
   }
 

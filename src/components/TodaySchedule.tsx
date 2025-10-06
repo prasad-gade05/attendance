@@ -14,11 +14,15 @@ import ExtraClassDialog from './ExtraClassDialog'
 import TermSettingsDialog from './TermSettingsDialog'
 import AttendanceStatsPanel from './AttendanceStatsPanel'
 import SimulationDialog from './SimulationDialog'
+import CustomCalendar from './CustomCalendar'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 const TodaySchedule: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  // Initialize selectedDate with time set to midnight to avoid timezone issues
+  const initialDate = new Date();
+  initialDate.setHours(0, 0, 0, 0);
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate)
   const [showExtraClassDialog, setShowExtraClassDialog] = useState(false)
   const [showTermSettings, setShowTermSettings] = useState(false)
   const [showAttendanceStats, setShowAttendanceStats] = useState(false)
@@ -38,12 +42,26 @@ const TodaySchedule: React.FC = () => {
     removeSpecialDate
   } = useSchedule()
 
+  // Add a check to ensure termSettings is loaded
+  useEffect(() => {
+    console.log('🔥 TodaySchedule: Term settings updated:', termSettings);
+  }, [termSettings]);
+
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd')
   const selectedDayName = DAYS[getDay(selectedDate)]
   const todayAttendance = getAttendanceForDate(selectedDateString)
   const todayExtraClasses = getExtraClassesForDate(selectedDateString)
   const specialDate = isSpecialDate(selectedDateString)
-  const dateInTerm = isDateInTerm(selectedDateString)
+  
+  // Check if date is in term, with additional logging
+  const dateInTerm = (() => {
+    console.log('🔥 TodaySchedule: Checking if date is in term');
+    console.log('🔥 TodaySchedule: selectedDate:', selectedDate);
+    console.log('🔥 TodaySchedule: selectedDateString:', selectedDateString);
+    const result = isDateInTerm(selectedDateString);
+    console.log(`Date ${selectedDateString} in term: ${result}, termSettings:`, termSettings);
+    return result;
+  })();
 
   // Get scheduled lectures for the selected day
   const getScheduledLectures = () => {
@@ -164,57 +182,21 @@ const TodaySchedule: React.FC = () => {
           </div>
         </div>
 
-        {/* Date Selection and Status */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="justify-start">
-                <Calendar className="h-4 w-4 mr-2" />
-                {format(selectedDate, 'PPP')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-
-          <div className="flex gap-2">
-            {specialDate && (
-              <Badge variant="destructive">
-                {specialDate.type === 'holiday' ? 'Holiday' : 'Exam'}
-              </Badge>
-            )}
-            
-            {!dateInTerm && (
-              <Badge variant="secondary">
-                Outside Term
-              </Badge>
-            )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleSpecialDate('holiday')}
-              className={specialDate?.type === 'holiday' ? 'bg-red-100' : ''}
-            >
-              Mark Holiday
-            </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => toggleSpecialDate('exam')}
-              className={specialDate?.type === 'exam' ? 'bg-red-100' : ''}
-            >
-              Mark Exam
-            </Button>
-          </div>
-        </div>
+        {/* Term Information moved to top */}
+        {termSettings && (
+          <Card className="mb-6">
+            <CardContent className="py-3">
+              <div className="flex items-center justify-center gap-6 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Term:</span>
+                  <span className="font-medium">
+                    {format(parseISO(termSettings.startDate), 'MMM dd, yyyy')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -252,6 +234,16 @@ const TodaySchedule: React.FC = () => {
                   <div className="text-muted-foreground">
                     Date is outside the current term period
                   </div>
+                  {!termSettings && (
+                    <div className="text-sm text-muted-foreground mt-2">
+                      Term settings not configured. Please set term dates in Term Settings.
+                    </div>
+                  )}
+                  {termSettings && (
+                    <div className="text-sm text-muted-foreground mt-2">
+                      Term: {format(parseISO(termSettings.startDate), 'MMM dd, yyyy')} - {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -305,72 +297,65 @@ const TodaySchedule: React.FC = () => {
           </Card>
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar - Calendar and Controls */}
         <div className="space-y-6">
-          {/* Quick Stats */}
-          {dateInTerm && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Quick Stats
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Total Lectures Today:</span>
-                    <span className="font-medium">
-                      {scheduledLectures.length + todayExtraClasses.length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Attended:</span>
-                    <span className="font-medium text-green-600">
-                      {todayAttendance.filter(a => a.status === 'attended').length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Missed:</span>
-                    <span className="font-medium text-red-600">
-                      {todayAttendance.filter(a => a.status === 'missed').length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Cancelled:</span>
-                    <span className="font-medium text-yellow-600">
-                      {todayAttendance.filter(a => a.status === 'cancelled').length}
-                    </span>
-                  </div>
+          {/* Calendar and Date Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Select Date
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col gap-4">
+                {/* Calendar */}
+                <div className="border rounded-lg bg-white shadow-sm">
+                  <CustomCalendar 
+                    selectedDate={selectedDate} 
+                    onDateSelect={(date) => {
+                      console.log('Date selected in CustomCalendar:', date);
+                      setSelectedDate(date);
+                    }} 
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Term Information */}
-          {termSettings && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Current Term</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Start Date:</span>
-                    <span className="font-medium">
-                      {format(parseISO(termSettings.startDate), 'MMM dd, yyyy')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>End Date:</span>
-                    <span className="font-medium">
-                      {format(parseISO(termSettings.endDate), 'MMM dd, yyyy')}
-                    </span>
-                  </div>
+                
+                {/* Status Badges */}
+                <div className="flex flex-wrap justify-center gap-2">
+                  {specialDate && (
+                    <Badge variant="destructive">
+                      {specialDate.type === 'holiday' ? 'Holiday' : 'Exam'}
+                    </Badge>
+                  )}
+                  
+                  {!dateInTerm && (
+                    <Badge variant="secondary">
+                      Outside Term
+                    </Badge>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                
+                {/* Action Buttons - Moved up and removed date display */}
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleSpecialDate('holiday')}
+                    className={specialDate?.type === 'holiday' ? 'bg-red-100 border-red-300' : ''}
+                  >
+                    {specialDate?.type === 'holiday' ? 'Remove Holiday' : 'Mark Holiday'}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleSpecialDate('exam')}
+                    className={specialDate?.type === 'exam' ? 'bg-red-100 border-red-300' : ''}
+                  >
+                    {specialDate?.type === 'exam' ? 'Remove Exam' : 'Mark Exam'}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
