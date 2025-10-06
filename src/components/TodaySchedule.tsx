@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { format, parseISO, getDay } from 'date-fns'
-import { Calendar, Clock, BookOpen, Plus, Settings, BarChart3 } from 'lucide-react'
+import { Calendar, Clock, BookOpen, Plus, Settings, BarChart3, Calculator } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -13,6 +13,7 @@ import TodayScheduleItem from './TodayScheduleItem'
 import ExtraClassDialog from './ExtraClassDialog'
 import TermSettingsDialog from './TermSettingsDialog'
 import AttendanceStatsPanel from './AttendanceStatsPanel'
+import SimulationDialog from './SimulationDialog'
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
@@ -21,6 +22,7 @@ const TodaySchedule: React.FC = () => {
   const [showExtraClassDialog, setShowExtraClassDialog] = useState(false)
   const [showTermSettings, setShowTermSettings] = useState(false)
   const [showAttendanceStats, setShowAttendanceStats] = useState(false)
+  const [showSimulationDialog, setShowSimulationDialog] = useState(false)
   
   const { subjects, timeSlots, daySlots, combinedSlots } = useTimetable()
   const {
@@ -135,6 +137,14 @@ const TodaySchedule: React.FC = () => {
           </div>
           
           <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSimulationDialog(true)}
+            >
+              <Calculator className="h-4 w-4 mr-2" />
+              Simulate
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -379,6 +389,11 @@ const TodaySchedule: React.FC = () => {
       <AttendanceStatsPanel
         open={showAttendanceStats}
         onOpenChange={setShowAttendanceStats}
+      />
+      
+      <SimulationDialog
+        open={showSimulationDialog}
+        onOpenChange={setShowSimulationDialog}
       />
     </div>
   )
