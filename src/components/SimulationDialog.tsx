@@ -54,7 +54,7 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
     if (open) {
       calculateSimulationData()
     }
-  }, [open, attendanceRecords, termSettings, specialDates, extraClasses, subjects, timeSlots, daySlots, combinedSlots])
+  }, [open, attendanceRecords, termSettings, specialDates, extraClasses, subjects.length, timeSlots.length, daySlots.length, combinedSlots.length])
 
   const calculateSimulationData = async () => {
     if (!termSettings) {
@@ -65,21 +65,153 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
     setLoading(true)
     setError(null)
     try {
-      const today = new Date()
-      const termEnd = parseISO(termSettings.endDate)
+      const todayDate = new Date()
+      const termEndDate = parseISO(termSettings.endDate)
       
       // If term has already ended, show appropriate message
-      if (isBefore(termEnd, today)) {
+      if (isBefore(termEndDate, todayDate)) {
         setError('The term has already ended. No future lectures to simulate.')
         setSimulationData([])
         return
       }
 
-      // Get current attendance stats for all subjects
-      const currentStats = getAttendanceStats()
+      // Calculate current attendance stats similar to AttendanceStatsPanel
       const statsMap: { [key: string]: AttendanceStats } = {}
-      currentStats.forEach(stat => {
-        statsMap[stat.subjectId] = stat
+      
+      // Initialize stats for all subjects
+      subjects.forEach(subject => {
+        statsMap[subject.id] = {
+          subjectId: subject.id,
+          totalLectures: 0,
+          attendedLectures: 0,
+          missedLectures: 0,
+          cancelledLectures: 0
+        }
+      })
+
+      // Calculate total lectures that should have happened
+      const termStart = parseISO(termSettings.startDate)
+      const termEnd = parseISO(termSettings.endDate)
+      const today = new Date()
+      const calculationEnd = today < termEnd ? today : termEnd
+
+      // Get all days in the term up to today
+      const allDays = eachDayOfInterval({ start: termStart, end: calculationEnd })
+
+      for (const date of allDays) {
+        const dateString = format(date, 'yyyy-MM-dd')
+        const dayName = DAYS[getDay(date)]
+        
+        // Skip special dates (holidays/exams)
+        const isSpecial = specialDates.some(sd => sd.date === dateString)
+        if (isSpecial) continue
+
+        // Get scheduled lectures for this day
+        const dayLectures = daySlots.filter(ds => 
+          ds.day === dayName && ds.subjectId
+        )
+
+        // Process regular lectures
+        for (const daySlot of dayLectures) {
+          // Check if this slot is part of a combined slot
+          const combinedSlot = combinedSlots.find(cs => 
+            cs.day === dayName && cs.daySlotIds.includes(daySlot.id)
+          )
+
+          let subjectId = daySlot.subjectId!
+          let shouldCount = true
+
+          if (combinedSlot) {
+            // Only count the first slot of a combined slot
+            const firstDaySlotId = combinedSlot.daySlotIds
+              .map(id => daySlots.find(ds => ds.id === id))
+              .filter(Boolean)
+              .sort((a, b) => {
+                const aTimeSlot = timeSlots.find(ts => ts.id === a!.timeSlotId)
+                const bTimeSlot = timeSlots.find(ts => ts.id === b!.timeSlotId)
+                return aTimeSlot!.startTime.localeCompare(bTimeSlot!.startTime)
+              })[0]?.id
+
+            shouldCount = daySlot.id === firstDaySlotId
+            subjectId = combinedSlot.subjectId
+          }
+
+          if (shouldCount) {
+            // Check if there's an attendance record for this lecture
+            const attendanceRecord = attendanceRecords.find(ar => 
+              ar.date === dateString && ar.timeSlotId === daySlot.timeSlotId
+            )
+
+            if (attendanceRecord) {
+              const actualSubjectId = attendanceRecord.actualSubjectId || attendanceRecord.originalSubjectId || subjectId
+              
+              if (attendanceRecord.status !== 'cancelled') {
+                statsMap[actualSubjectId].totalLectures++
+                
+                if (attendanceRecord.status === 'attended') {
+                  statsMap[actualSubjectId].attendedLectures++
+                } else if (attendanceRecord.status === 'missed') {
+                  statsMap[actualSubjectId].missedLectures++
+                }
+              } else {
+                statsMap[actualSubjectId].cancelledLectures++
+              }
+              
+              // If subject was changed, adjust the original subject's count
+              if (attendanceRecord.actualSubjectId && 
+                  attendanceRecord.actualSubjectId !== attendanceRecord.originalSubjectId &&
+                  attendanceRecord.originalSubjectId) {
+                statsMap[attendanceRecord.originalSubjectId].totalLectures--
+              }
+            } else {
+              // No attendance record - count as total lecture but not attended/missed
+              statsMap[subjectId].totalLectures++
+            }
+          }
+        }
+      }
+
+      // Process extra classes
+      extraClasses.forEach(extraClass => {
+        // Only count extra classes that are within the term
+        if (isDateInTerm(extraClass.date)) {
+          const subjectId = extraClass.subjectId;
+          
+          // Initialize stats for this subject if not already present
+          if (!statsMap[subjectId]) {
+            statsMap[subjectId] = {
+              subjectId: subjectId,
+              totalLectures: 0,
+              attendedLectures: 0,
+              missedLectures: 0,
+              cancelledLectures: 0
+            }
+          }
+          
+          // Check if there's an attendance record for this extra class
+          const attendanceRecord = attendanceRecords.find(ar => 
+            ar.date === extraClass.date && ar.timeSlotId === extraClass.timeSlotId
+          )
+          
+          if (attendanceRecord) {
+            // Use the actual attendance record status
+            if (attendanceRecord.status !== 'cancelled') {
+              statsMap[subjectId].totalLectures++
+              
+              if (attendanceRecord.status === 'attended') {
+                statsMap[subjectId].attendedLectures++
+              } else if (attendanceRecord.status === 'missed') {
+                statsMap[subjectId].missedLectures++
+              }
+            } else {
+              statsMap[subjectId].cancelledLectures++
+            }
+          } else {
+            // No attendance record - count as total lecture and attended by default
+            statsMap[subjectId].totalLectures++
+            statsMap[subjectId].attendedLectures++
+          }
+        }
       })
 
       // Calculate future lectures for each subject
@@ -97,8 +229,8 @@ const SimulationDialog: React.FC<SimulationDialogProps> = ({
         // Calculate future lectures from today to term end
         const futureLectures = await calculateFutureLectures(
           subject.id,
-          today,
-          termEnd
+          todayDate,
+          termEndDate
         )
 
         // Initialize with 0% target (will be updated by user)
