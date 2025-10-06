@@ -11,22 +11,22 @@ interface ColorPickerProps {
 }
 
 const predefinedColors = [
-  { color: '#475569', name: 'Slate' },
-  { color: '#4b5563', name: 'Gray' },
-  { color: '#374151', name: 'Dark Gray' },
-  { color: '#b91c1c', name: 'Red' },
-  { color: '#c2410c', name: 'Orange' },
-  { color: '#a16207', name: 'Yellow' },
-  { color: '#15803d', name: 'Green' },
-  { color: '#0e7490', name: 'Cyan' },
-  { color: '#1d4ed8', name: 'Blue' },
-  { color: '#6d28d9', name: 'Purple' },
+  { color: '#dc2626', name: 'Red' },      // More vibrant red
+  { color: '#ea580c', name: 'Orange' },   // More vibrant orange
+  { color: '#d97706', name: 'Amber' },    // More vibrant amber
+  { color: '#ca8a04', name: 'Yellow' },   // More vibrant yellow
+  { color: '#16a34a', name: 'Green' },    // More vibrant green
+  { color: '#0891b2', name: 'Cyan' },     // More vibrant cyan
+  { color: '#0284c7', name: 'Blue' },     // More vibrant blue
+  { color: '#4f46e5', name: 'Indigo' },   // More vibrant indigo
+  { color: '#7c3aed', name: 'Violet' },   // More vibrant violet
+  { color: '#c026d3', name: 'Fuchsia' },  // More vibrant fuchsia
 ]
 
 const ColorPicker: React.FC<ColorPickerProps> = ({
   label,
   name,
-  value = '#475569',
+  value = '#4f46e5',
   onChange
 }) => {
   const [customColor, setCustomColor] = useState(value)
@@ -47,21 +47,21 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <Label htmlFor={name} className="flex items-center gap-2 text-sm font-medium text-foreground">
         <Palette className="h-4 w-4 text-muted-foreground" />
         {label}
       </Label>
       
       {/* Predefined Colors */}
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-3">
         {predefinedColors.map(({ color, name: colorName }) => (
           <button
             key={color}
             type="button"
-            className={`group relative w-full aspect-square rounded-md border transition-all duration-200 ${ 
+            className={`group relative w-full h-10 rounded-md border-2 transition-all duration-200 flex items-center justify-center ${
               value === color 
-                ? 'border-ring ring-2 ring-ring/50'
+                ? 'border-ring ring-2 ring-ring/50 scale-105'
                 : 'border-border hover:border-muted-foreground'
             }`}
             style={{ backgroundColor: color }}
@@ -69,9 +69,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             title={colorName}
           >
             {value === color && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Check className="h-4 w-4 text-white" />
-              </div>
+              <Check className="h-5 w-5 text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]" />
             )}
           </button>
         ))}
@@ -87,7 +85,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             id={`${name}-custom`}
             name={name}
             type="text"
-            placeholder="#475569"
+            placeholder="#4f46e5"
             value={customColor}
             onChange={handleCustomColorChange}
             className="font-mono text-sm pl-10 border-border"

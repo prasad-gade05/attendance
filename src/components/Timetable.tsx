@@ -17,11 +17,12 @@ import {
 } from '../components/ui/select'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Plus, Edit2, Trash2, Combine, Split, X, Palette, Info, Clock, Zap, Star } from 'lucide-react'
-import { Subject } from '../types'
+import { Plus, Edit2, Trash2, Combine, Split, X, Palette, Info, Clock } from 'lucide-react'
+import { Subject, DaySlot } from '../types'
 import TimePicker from './TimePicker'
 import ConfirmDialog from './ConfirmDialog'
 import ColorPicker from './ColorPicker'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 
 const Timetable = () => {
   const { 
@@ -46,7 +47,7 @@ const Timetable = () => {
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null)
   const [startTime, setStartTime] = useState('09:00')
   const [endTime, setEndTime] = useState('10:00')
-  const [subjectColor, setSubjectColor] = useState('#334155')
+  const [subjectColor, setSubjectColor] = useState('#4f46e5')
   
   // Confirmation dialogs state
   const [showDeleteSubjectDialog, setShowDeleteSubjectDialog] = useState<{show: boolean, subjectId: string}>({show: false, subjectId: ''})
@@ -88,7 +89,7 @@ const Timetable = () => {
     
     setSubjectDialogOpen(false)
     setEditingSubject(null)
-    setSubjectColor('#334155')
+    setSubjectColor('#4f46e5')
   }
   
   const handleAddTimeSlot = (e: React.FormEvent) => {
@@ -192,23 +193,26 @@ const Timetable = () => {
     // Check if all slots have the same subject
     const daySlotItems = selectedSlots.map(s => 
       daySlots.find(ds => ds.timeSlotId === s.timeSlotId && ds.day === s.day)
-    ).filter(Boolean)
+    ).filter(item => item !== undefined) as any[]
     
-    const subjectIds = [...new Set(daySlotItems.map(ds => ds?.subjectId).filter(Boolean))]
+    const subjectIds = [...new Set(daySlotItems.map((ds: any) => ds.subjectId).filter((id: string | undefined) => id !== undefined))]
+    
+    // Check if any slots are empty
+    const hasEmptySlots = daySlotItems.some((ds: any) => !ds.subjectId)
+    if (hasEmptySlots) {
+      setShowAlertDialog({
+        show: true,
+        title: 'Empty Slots',
+        message: 'Cannot combine empty slots. Please assign a subject to all slots first.'
+      })
+      return
+    }
+    
     if (subjectIds.length !== 1) {
       setShowAlertDialog({
         show: true,
         title: 'Invalid Selection',
         message: 'All slots must have the same subject to combine them.'
-      })
-      return
-    }
-    
-    if (subjectIds.length === 0) {
-      setShowAlertDialog({
-        show: true,
-        title: 'Empty Slots',
-        message: 'Cannot combine empty slots. Please assign a subject to all slots first.'
       })
       return
     }
@@ -291,35 +295,30 @@ const Timetable = () => {
   }
 
   return (
-    <div className="space-y-8 animate-slide-up">
+    <div className="space-y-6">
       {/* Action Buttons */}
-      <div className="glass-card rounded-2xl p-6 border border-accent shadow-soft">
-        <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-3">
         <Dialog open={subjectDialogOpen} onOpenChange={setSubjectDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
-              onClick={() => {
-                setEditingSubject(null)
-                setSubjectColor('#334155')
-              }}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 hover-lift group shadow-soft"
-            >
-              <Plus className="mr-2 h-4 w-4 group-hover:animate-bounce-subtle" />
+            <Button onClick={() => {
+              setEditingSubject(null)
+              setSubjectColor('#4f46e5')
+            }}>
+              <Plus className="mr-2 h-4 w-4" />
               Add Subject
-              <Star className="ml-2 h-3 w-3 animate-pulse-gentle" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md animate-scale-in glass-card border-accent">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-slate-900">
+              <DialogTitle className="flex items-center gap-2">
                 {editingSubject ? (
                   <>
-                    <Edit2 className="h-5 w-5 text-blue-600 animate-pulse-gentle" />
+                    <Edit2 className="h-5 w-5" />
                     Edit Subject
                   </>
                 ) : (
                   <>
-                    <Plus className="h-5 w-5 text-purple-600 animate-bounce-subtle" />
+                    <Plus className="h-5 w-5" />
                     Create New Subject
                   </>
                 )}
@@ -327,13 +326,12 @@ const Timetable = () => {
             </DialogHeader>
             <form onSubmit={handleAddSubject} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-slate-700">Subject Name</Label>
+                <Label htmlFor="name" className="text-sm font-medium">Subject Name</Label>
                 <Input 
                   id="name" 
                   name="name" 
                   defaultValue={editingSubject?.name || ''} 
                   required 
-                  className="transition-all duration-300 focus:ring-2 focus:ring-purple-400/20 border-purple-200/50 hover:border-purple-300"
                   placeholder="Enter subject name..."
                 />
               </div>
@@ -343,11 +341,7 @@ const Timetable = () => {
                 value={editingSubject?.color || subjectColor}
                 onChange={setSubjectColor}
               />
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-300 hover-lift"
-              >
-                <Zap className="mr-2 h-4 w-4 animate-pulse-gentle" />
+              <Button type="submit" className="w-full">
                 {editingSubject ? 'Update Subject' : 'Create Subject'}
               </Button>
             </form>
@@ -356,18 +350,15 @@ const Timetable = () => {
         
         <Dialog open={timeSlotDialogOpen} onOpenChange={setTimeSlotDialogOpen}>
           <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-400 transition-all duration-300 hover-lift group shadow-soft"
-            >
-              <Clock className="mr-2 h-4 w-4 group-hover:animate-rotate-slow" />
+            <Button variant="outline">
+              <Clock className="mr-2 h-4 w-4" />
               Add Time Slot
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md animate-scale-in glass-card border-accent">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-slate-900">
-                <Clock className="h-5 w-5 text-blue-600 animate-rotate-slow" />
+              <DialogTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5" />
                 Create Time Slot
               </DialogTitle>
             </DialogHeader>
@@ -388,11 +379,7 @@ const Timetable = () => {
                   required
                 />
               </div>
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white transition-all duration-300 hover-lift"
-              >
-                <Zap className="mr-2 h-4 w-4 animate-pulse-gentle" />
+              <Button type="submit" className="w-full">
                 Create Time Slot
               </Button>
             </form>
@@ -407,406 +394,337 @@ const Timetable = () => {
             }
             setIsCombineMode(!isCombineMode)
           }}
-          className={isCombineMode 
-            ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white transition-all duration-300 hover-lift shadow-soft" 
-            : "border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 transition-all duration-300 hover-lift group shadow-soft"
-          }
         >
-          <Combine className={`mr-2 h-4 w-4 ${isCombineMode ? 'animate-pulse-gentle' : 'group-hover:animate-bounce-subtle'}`} />
+          <Combine className="mr-2 h-4 w-4" />
           {isCombineMode ? 'Cancel Combine' : 'Combine Slots'}
         </Button>
         
         {isCombineMode && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 w-full animate-slide-up shadow-soft">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 animate-glow">
-                <Combine className="h-5 w-5 text-white animate-pulse-gentle" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-amber-900 mb-1 flex items-center gap-2">
-                  Combine Mode Active
-                  <Star className="h-4 w-4 text-amber-600 animate-pulse-gentle" />
-                </h3>
-                <p className="text-amber-700 text-sm leading-relaxed">
-                  Click on slots with the same subject to select them for combining. 
-                  Only adjacent slots from the same day with the same subject can be combined.
-                </p>
-                {selectedSlots.length > 0 && (
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-amber-200">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full animate-bounce-subtle"></div>
-                      <span className="text-amber-700 text-sm font-medium">
-                        {selectedSlots.length} slot{selectedSlots.length !== 1 ? 's' : ''} selected
-                      </span>
-                    </div>
-                    <Button 
-                      onClick={handleCombineSlots} 
-                      disabled={selectedSlots.length < 2}
-                      size="sm"
-                      className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover-lift shadow-soft"
-                    >
-                      <Combine className="mr-2 h-4 w-4 animate-pulse-gentle" />
-                      Combine Selected ({selectedSlots.length})
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      
-      <div className="glass-card rounded-2xl shadow-elegant border border-accent overflow-hidden animate-fade-in">
-        {sortedTimeSlots.length === 0 ? (
-          <div className="text-center py-20 px-8">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-float">
-              <Clock className="h-10 w-10 text-blue-500 animate-rotate-slow" />
-            </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-3">No time slots yet</h3>
-            <p className="text-slate-500 mb-8 max-w-sm mx-auto leading-relaxed">
-              Get started by creating your first time slot to organize your schedule efficiently
-            </p>
-            <Button 
-              onClick={() => setTimeSlotDialogOpen(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white transition-all duration-300 hover-lift shadow-soft"
-            >
-              <Plus className="mr-2 h-4 w-4 animate-bounce-subtle" />
-              Create First Time Slot
-              <Star className="ml-2 h-3 w-3 animate-pulse-gentle" />
-            </Button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-accent">
-                  <th className="px-6 py-5 text-left text-sm font-semibold text-slate-900 w-32">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-blue-500 animate-pulse-gentle" />
-                      Time
-                    </div>
-                  </th>
-                  {days.map((day, index) => (
-                    <th key={day} className="px-6 py-5 text-center text-sm font-semibold text-slate-900">
-                      <div className="flex items-center justify-center gap-2">
-                        {day}
-                        <div className={`w-2 h-2 rounded-full animate-pulse-gentle ${
-                          ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-green-400', 'bg-blue-400', 'bg-indigo-400', 'bg-purple-400'][index]
-                        }`}></div>
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100/50">
-              {sortedTimeSlots.map((timeSlot, index) => (
-                <tr 
-                  key={timeSlot.id} 
-                  className="hover:bg-blue-50/30 transition-all duration-300 group animate-fade-in"
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animationFillMode: 'both'
-                  }}
+          <Card className="w-full">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Combine className="h-4 w-4" />
+                  <span className="font-medium">
+                    Combine Mode Active: {selectedSlots.length} slot{selectedSlots.length !== 1 ? 's' : ''} selected
+                  </span>
+                </div>
+                <Button 
+                  onClick={handleCombineSlots} 
+                  disabled={selectedSlots.length < 2}
+                  size="sm"
                 >
-                  <td className="px-6 py-5 text-center font-mono group relative bg-gradient-to-r from-slate-50/50 to-blue-50/30 border-r border-accent">
-                    <div className="text-sm font-semibold text-slate-900 flex items-center justify-center gap-2">
-                      <Clock className="h-4 w-4 text-blue-500 animate-pulse-gentle" />
-                      {timeSlot.startTime} - {timeSlot.endTime}
-                    </div>
-                    
-                    {/* Delete time slot button - shows on hover */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-7 w-7 bg-white hover:bg-red-50 border border-red-200 hover:border-red-300 rounded-lg shadow-soft hover-lift"
-                        onClick={() => handleDeleteTimeSlot(timeSlot.id)}
-                        title="Delete this time slot"
-                      >
-                        <Trash2 className="h-3 w-3 text-red-600 group-hover:animate-bounce-subtle" />
-                      </Button>
-                    </div>
-                  </td>
-                  {days.map((day, index) => {
-                    const daySlot = getDaySlot(timeSlot.id, day)
-                    const combinedSlot = getCombinedSlot(timeSlot.id, day)
-                    const isPartOfCombined = isSlotPartOfCombined(timeSlot.id, day)
-                    const rowSpan = getTimeSlotSpan(timeSlot.id, day)
-                    
-                    // Skip rendering if this slot is part of a combined slot but not the first one
-                    if (isPartOfCombined) {
-                      return null
-                    }
-                    
-                    const subject = daySlot?.subjectId ? subjects.find(s => s.id === daySlot.subjectId) : null
-                    const isSelected = selectedSlots.some(s => s.timeSlotId === timeSlot.id && s.day === day)
-                    
-                    return (
-                      <td 
-                        key={`${timeSlot.id}-${day}`} 
-                        className={`px-6 py-5 h-24 relative transition-all duration-300 ${
-                          isCombineMode && daySlot?.subjectId ? 'cursor-pointer' : ''
-                        } ${
-                          isSelected ? 'ring-2 ring-blue-400 ring-inset bg-blue-50/70 animate-glow' : ''
-                        } ${isCombineMode && daySlot?.subjectId ? 'hover:bg-blue-50/50' : ''}
-                        ${combinedSlot ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-emerald-400' : 'border-l border-accent'}
-                        group/cell hover-lift`}
-                        rowSpan={rowSpan}
-                        onClick={() => daySlot?.subjectId && handleCellClick(timeSlot.id, day)}
-                        style={{
-                          animationDelay: `${index * 100}ms`
-                        }}
-                      >
-                        {subject && !isCombineMode && (
-                          <div 
-                            className="absolute inset-0 flex items-center justify-center p-3 group/cell rounded-xl m-2 border-2 transform-gpu transition-all duration-300 group-hover/cell:scale-105 shadow-soft hover-lift"
-                            style={{ 
-                              backgroundColor: `${subject.color}15`,
-                              borderColor: `${subject.color}60`
-                            }}
-                          >
-                            <div className="text-center">
-                              <div 
-                                className="text-sm font-semibold mb-1 flex items-center justify-center gap-1"
-                                style={{ color: subject.color }}
-                              >
-                                <Star className="h-3 w-3 animate-pulse-gentle" />
-                                {subject.name}
-                              </div>
-                              {combinedSlot && (
-                                <div className="flex items-center justify-center gap-1">
-                                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-gentle"></div>
-                                  <span className="text-xs text-emerald-700 font-medium">Combined</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Remove subject button */}
-                            <div className="absolute top-1 left-1 opacity-0 group-hover/cell:opacity-100 transition-all duration-300">
-                              <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                className="h-6 w-6 bg-white hover:bg-white border border-slate-200 rounded-lg shadow-soft hover-lift"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  assignSubjectToSlot(timeSlot.id, day, undefined)
-                                }}
-                                title="Remove subject"
-                              >
-                                <X className="h-3 w-3 text-slate-600 group-hover:animate-bounce-subtle" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {subject && isCombineMode && (
-                          <div 
-                            className="absolute inset-0 flex items-center justify-center p-3 rounded-xl m-2 border-2 transform-gpu transition-all duration-300 group-hover/cell:scale-105 shadow-soft"
-                            style={{ 
-                              backgroundColor: `${subject.color}15`,
-                              borderColor: `${subject.color}60`
-                            }}
-                          >
-                            <div className="text-center">
-                              <div 
-                                className="text-sm font-semibold mb-1 flex items-center justify-center gap-1"
-                                style={{ color: subject.color }}
-                              >
-                                <Star className="h-3 w-3 animate-pulse-gentle" />
-                                {subject.name}
-                              </div>
-                              {combinedSlot && (
-                                <div className="flex items-center justify-center gap-1">
-                                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse-gentle"></div>
-                                  <span className="text-xs text-emerald-700 font-medium">Combined</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {combinedSlot && !isCombineMode && (
-                          <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="h-6 w-6 bg-white hover:bg-white border border-slate-200 rounded-lg shadow-soft hover-lift"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleUncombineSlot(combinedSlot.id)
-                              }}
-                              title="Uncombine slots"
-                            >
-                              <Split className="h-3 w-3 text-slate-600 group-hover:animate-bounce-subtle" />
-                            </Button>
-                          </div>
-                        )}
-                        
-                        {!subject && !isCombineMode && (
-                          <div className="flex items-center justify-center h-full">
-                            <Select 
-                              onValueChange={(value) => 
-                                assignSubjectToSlot(timeSlot.id, day, value === 'none' ? undefined : value)
-                              }
-                            >
-                              <SelectTrigger className="h-11 w-36 text-xs border-2 border-dashed border-blue-300 hover:border-blue-400 transition-all duration-300 bg-white/80 backdrop-blur-sm rounded-lg shadow-soft hover-lift">
-                                <SelectValue placeholder="+ Add subject" />
-                              </SelectTrigger>
-                              <SelectContent className="glass-card border-accent">
-                                <SelectItem value="none" className="text-slate-500">None</SelectItem>
-                                {subjects.map(subject => (
-                                  <SelectItem key={subject.id} value={subject.id}>
-                                    <div className="flex items-center gap-2">
-                                      <div 
-                                        className="w-3 h-3 rounded-full animate-pulse-gentle" 
-                                        style={{ backgroundColor: subject.color }}
-                                      />
-                                      {subject.name}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                        
-                        {/* Replace subject dropdown for existing subjects */}
-                        {subject && !isCombineMode && !combinedSlot && (
-                          <div className="absolute bottom-1 right-1 opacity-0 group-hover/cell:opacity-100 transition-all duration-300">
-                            <Select 
-                              onValueChange={(value) => 
-                                assignSubjectToSlot(timeSlot.id, day, value === 'none' ? undefined : value)
-                              }
-                            >
-                              <SelectTrigger className="h-7 w-7 p-0 text-xs bg-white hover:bg-white border border-slate-200 rounded-lg shadow-soft hover-lift">
-                                <Edit2 className="h-3 w-3 text-slate-600 group-hover:animate-bounce-subtle" />
-                              </SelectTrigger>
-                              <SelectContent className="glass-card border-accent">
-                                <SelectItem value="none" className="text-red-600">Remove Subject</SelectItem>
-                                {subjects.map(subj => (
-                                  <SelectItem key={subj.id} value={subj.id}>
-                                    <div className="flex items-center gap-2">
-                                      <div 
-                                        className="w-3 h-3 rounded-full animate-pulse-gentle" 
-                                        style={{ backgroundColor: subj.color }}
-                                      />
-                                      {subj.name}
-                                    </div>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-                      </td>
-                    )
-                  }).filter(Boolean)}
-                </tr>
-              ))}
-              </tbody>
-            </table>
-          </div>
+                  <Combine className="mr-2 h-4 w-4" />
+                  Combine Selected ({selectedSlots.length})
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
       
-      {/* Subjects Section */}
-      <div className="glass-card rounded-2xl shadow-elegant border border-accent overflow-hidden">
-        <div className="px-8 py-6 bg-gradient-to-r from-blue-50/50 to-purple-50/50 border-b border-accent">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                <Palette className="h-6 w-6 text-purple-600 animate-pulse-gentle" />
-                Subjects
-                <Star className="h-5 w-5 text-amber-500 animate-bounce-subtle" />
-              </h2>
-              <p className="text-sm text-slate-600 mt-1">Manage your course subjects and colors</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-8">
-          {subjects.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-float">
-                <Palette className="h-12 w-12 text-purple-600 animate-rotate-slow" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">No subjects yet</h3>
-              <p className="text-slate-500 mb-8 max-w-sm mx-auto leading-relaxed">
-                Create your first subject to start organizing your timetable with beautiful colors
+      <Card>
+        <CardContent className="p-0">
+          {sortedTimeSlots.length === 0 ? (
+            <div className="text-center py-12">
+              <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No time slots yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Get started by creating your first time slot to organize your schedule
               </p>
-              <Button 
-                onClick={() => {
-                  setEditingSubject(null)
-                  setSubjectColor('#334155')
-                  setSubjectDialogOpen(true)
-                }}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-elegant hover:shadow-elevated transition-all duration-300 hover-lift"
-              >
-                <Plus className="mr-2 h-4 w-4 animate-bounce-subtle" />
-                Create First Subject
-                <Star className="ml-2 h-4 w-4 animate-pulse-gentle" />
+              <Button onClick={() => setTimeSlotDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Time Slot
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {subjects.map((subject, index) => (
-                <div 
-                  key={subject.id} 
-                  className="group relative glass-card border border-accent rounded-2xl p-6 hover:shadow-elegant transition-all duration-300 hover-lift animate-fade-in"
-                  style={{ 
-                    animationDelay: `${index * 150}ms`,
-                    animationFillMode: 'both'
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                      <div 
-                        className="w-14 h-14 rounded-2xl shadow-soft flex items-center justify-center animate-glow"
-                        style={{ backgroundColor: subject.color }}
-                      >
-                        <span className="text-white font-bold text-xl">
-                          {subject.name.charAt(0).toUpperCase()}
-                        </span>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="px-4 py-3 text-left text-sm font-semibold w-32">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Time
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-slate-900 text-lg flex items-center gap-2">
-                          {subject.name}
-                          <Star className="h-4 w-4 text-amber-500 animate-pulse-gentle" />
-                        </h3>
-                        <p className="text-sm text-slate-500 font-mono mt-1">{subject.color}</p>
+                    </th>
+                    {days.map((day) => (
+                      <th key={day} className="px-4 py-3 text-center text-sm font-semibold">
+                        {day}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {sortedTimeSlots.map((timeSlot) => (
+                    <tr key={timeSlot.id}>
+                      <td className="px-4 py-3 text-center font-mono text-sm border-r">
+                        {timeSlot.startTime} - {timeSlot.endTime}
+                        
+                        {/* Delete time slot button - shows on hover */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity float-right">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-6 w-6"
+                            onClick={() => handleDeleteTimeSlot(timeSlot.id)}
+                            title="Delete this time slot"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                      {days.map((day) => {
+                        const daySlot = getDaySlot(timeSlot.id, day)
+                        const combinedSlot = getCombinedSlot(timeSlot.id, day)
+                        const isPartOfCombined = isSlotPartOfCombined(timeSlot.id, day)
+                        const rowSpan = getTimeSlotSpan(timeSlot.id, day)
+                        
+                        // Skip rendering if this slot is part of a combined slot but not the first one
+                        if (isPartOfCombined) {
+                          return null
+                        }
+                        
+                        const subject = daySlot?.subjectId ? subjects.find(s => s.id === daySlot.subjectId) : null
+                        const isSelected = selectedSlots.some(s => s.timeSlotId === timeSlot.id && s.day === day)
+                        
+                        return (
+                          <td 
+                            key={`${timeSlot.id}-${day}`} 
+                            className={`px-4 py-3 h-20 relative group ${
+                              isCombineMode && daySlot?.subjectId ? 'cursor-pointer' : ''
+                            } ${
+                              isSelected ? 'ring-2 ring-primary' : ''
+                            } ${isCombineMode && daySlot?.subjectId ? 'hover:bg-muted' : ''}
+                            ${combinedSlot ? 'bg-muted' : ''}`}
+                            rowSpan={rowSpan}
+                            onClick={() => daySlot?.subjectId && handleCellClick(timeSlot.id, day)}
+                          >
+                            {subject && !isCombineMode && (
+                              <div 
+                                className="absolute inset-0 flex items-center justify-center p-2 rounded border"
+                                style={{ 
+                                  backgroundColor: `${subject.color}15`,
+                                  borderColor: `${subject.color}60`
+                                }}
+                              >
+                                <div className="text-center">
+                                  <div 
+                                    className="text-sm font-medium"
+                                    style={{ color: subject.color }}
+                                  >
+                                    {subject.name}
+                                  </div>
+                                  {combinedSlot && (
+                                    <div className="flex items-center justify-center gap-1 mt-1">
+                                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                                      <span className="text-xs text-muted-foreground">Combined</span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Remove subject button */}
+                                <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button 
+                                    size="icon" 
+                                    variant="ghost" 
+                                    className="h-5 w-5"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      assignSubjectToSlot(timeSlot.id, day, undefined)
+                                    }}
+                                    title="Remove subject"
+                                  >
+                                    <X className="h-2.5 w-2.5" />
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {subject && isCombineMode && (
+                              <div 
+                                className="absolute inset-0 flex items-center justify-center p-2 rounded border"
+                                style={{ 
+                                  backgroundColor: `${subject.color}15`,
+                                  borderColor: `${subject.color}60`
+                                }}
+                              >
+                                <div className="text-center">
+                                  <div 
+                                    className="text-sm font-medium"
+                                    style={{ color: subject.color }}
+                                  >
+                                    {subject.name}
+                                  </div>
+                                  {combinedSlot && (
+                                    <div className="flex items-center justify-center gap-1 mt-1">
+                                      <div className="w-2 h-2 bg-primary rounded-full"></div>
+                                      <span className="text-xs text-muted-foreground">Combined</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {combinedSlot && !isCombineMode && (
+                              <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  className="h-5 w-5"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleUncombineSlot(combinedSlot.id)
+                                  }}
+                                  title="Uncombine slots"
+                                >
+                                  <Split className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            )}
+                            
+                            {!subject && !isCombineMode && (
+                              <div className="flex items-center justify-center h-full">
+                                <Select 
+                                  onValueChange={(value) => 
+                                    assignSubjectToSlot(timeSlot.id, day, value === 'none' ? undefined : value)
+                                  }
+                                >
+                                  <SelectTrigger className="h-8 text-xs border-dashed">
+                                    <SelectValue placeholder="+ Add subject" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {subjects.map(subject => (
+                                      <SelectItem key={subject.id} value={subject.id}>
+                                        <div className="flex items-center gap-2">
+                                          <div 
+                                            className="w-3 h-3 rounded-full" 
+                                            style={{ backgroundColor: subject.color }}
+                                          />
+                                          {subject.name}
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                            
+                            {/* Replace subject dropdown for existing subjects */}
+                            {subject && !isCombineMode && !combinedSlot && (
+                              <div className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Select 
+                                  onValueChange={(value) => 
+                                    assignSubjectToSlot(timeSlot.id, day, value === 'none' ? undefined : value)
+                                  }
+                                >
+                                  <SelectTrigger className="h-5 w-5 p-0">
+                                    <Edit2 className="h-2.5 w-2.5" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none" className="text-destructive">Remove Subject</SelectItem>
+                                    {subjects.map(subj => (
+                                      <SelectItem key={subj.id} value={subj.id}>
+                                        <div className="flex items-center gap-2">
+                                          <div 
+                                            className="w-3 h-3 rounded-full" 
+                                            style={{ backgroundColor: subj.color }}
+                                          />
+                                          {subj.name}
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                          </td>
+                        )
+                      }).filter(Boolean)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Subjects Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="h-5 w-5" />
+            Subjects
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {subjects.length === 0 ? (
+            <div className="text-center py-8">
+              <Palette className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No subjects yet</h3>
+              <p className="text-muted-foreground mb-4">
+                Create your first subject to start organizing your timetable
+              </p>
+              <Button onClick={() => {
+                setEditingSubject(null)
+                setSubjectColor('#4f46e5')
+                setSubjectDialogOpen(true)
+              }}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create First Subject
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {subjects.map((subject) => (
+                <Card key={subject.id} className="relative">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div 
+                          className="w-10 h-10 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: subject.color }}
+                        >
+                          <span className="text-white font-bold">
+                            {subject.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-medium">{subject.name}</h3>
+                          <p className="text-xs text-muted-foreground">{subject.color}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-1">
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => {
+                            setEditingSubject(subject)
+                            setSubjectColor(subject.color)
+                            setSubjectDialogOpen(true)
+                          }}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => handleDeleteSubject(subject.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
-                    
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          setEditingSubject(subject)
-                          setSubjectColor(subject.color)
-                          setSubjectDialogOpen(true)
-                        }}
-                        className="border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 hover-lift"
-                      >
-                        <Edit2 className="h-4 w-4 group-hover:animate-bounce-subtle" />
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => handleDeleteSubject(subject.id)}
-                        className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 transition-all duration-300 hover-lift"
-                      >
-                        <Trash2 className="h-4 w-4 group-hover:animate-bounce-subtle" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
-        </div>
-      </div>
-      </div>
+        </CardContent>
+      </Card>
       
       {/* Confirmation Dialogs */}
       <ConfirmDialog
@@ -841,26 +759,18 @@ const Timetable = () => {
       
       {/* Alert Dialog */}
       <Dialog open={showAlertDialog.show} onOpenChange={(open) => setShowAlertDialog({show: open, title: '', message: ''})}>
-        <DialogContent className="sm:max-w-md overflow-hidden glass-card border-accent animate-scale-in">
-          <div className="px-6 py-4 bg-gradient-to-r from-blue-50/70 to-indigo-50/70 -m-6 mb-4 border-b border-accent">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3 text-lg">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center animate-glow">
-                  <Info className="h-5 w-5 text-white animate-pulse-gentle" />
-                </div>
-                {showAlertDialog.title}
-              </DialogTitle>
-            </DialogHeader>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              {showAlertDialog.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <p className="text-muted-foreground">{showAlertDialog.message}</p>
           </div>
-          <div className="px-6 pb-2">
-            <p className="text-sm text-slate-600 leading-relaxed">{showAlertDialog.message}</p>
-          </div>
-          <div className="flex justify-end px-6 pb-6 pt-4">
-            <Button 
-              onClick={() => setShowAlertDialog({show: false, title: '', message: ''})}
-              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-elegant hover:shadow-elevated transition-all duration-300 hover-lift"
-            >
-              <Zap className="mr-2 h-4 w-4 animate-pulse-gentle" />
+          <div className="flex justify-end">
+            <Button onClick={() => setShowAlertDialog({show: false, title: '', message: ''})}>
               OK
             </Button>
           </div>
