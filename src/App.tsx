@@ -13,7 +13,7 @@ function App() {
     <ThemeProvider>
       <TimetableProvider>
         <ScheduleProvider>
-          <Router>
+          <Router basename="/attendance">
             <div className="min-h-screen bg-background relative">
               <Header />
               <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in relative z-10">

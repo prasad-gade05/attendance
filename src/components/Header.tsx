@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { useTimetable } from "../hooks/useTimetable";
 import { useSchedule } from "../hooks/useSchedule";
-import { Trash2, Calendar, CalendarDays, Grid3X3 } from "lucide-react";
+import { Trash2, Calendar, CalendarDays, Grid3X3, Download } from "lucide-react";
 import ThemeSwitcher from "./ThemeSwitcher";
 import ConfirmDialog from "./ConfirmDialog";
+import ImportExportDialog from "./ImportExportDialog";
 
 const Header = () => {
   const { clearAllData: clearTimetableData, loadData: loadTimetableData } =
@@ -70,6 +71,8 @@ const Header = () => {
               Timetable
             </Button>
           </div>
+
+          <ImportExportDialog />
 
           <ThemeSwitcher />
 
