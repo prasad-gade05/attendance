@@ -46,43 +46,43 @@
   }
 
   .dark {
-    --background: 240 10% 5.9%;
-    --foreground: 0 0% 90%;
+    --background: 240 10% 10%; /* Darker background for better contrast */
+    --foreground: 0 0% 95%; /* Lighter text for better readability */
 
-    --muted: 240 3.7% 12.9%;
-    --muted-foreground: 240 5% 60.9%;
+    --muted: 240 5% 15%; /* Slightly lighter muted background */
+    --muted-foreground: 240 5% 75%; /* Lighter muted text */
 
-    --popover: 240 10% 5.9%;
-    --popover-foreground: 0 0% 90%;
+    --popover: 240 10% 12%; /* Lighter popover background */
+    --popover-foreground: 0 0% 95%;
 
-    --border: 240 3.7% 12.9%;
-    --input: 240 3.7% 12.9%;
+    --border: 240 5% 20%; /* More visible border */
+    --input: 240 5% 18%; /* Slightly lighter input background */
 
-    --card: 240 10% 5.9%;
-    --card-foreground: 0 0% 90%;
+    --card: 240 10% 12%; /* Lighter card background */
+    --card-foreground: 0 0% 95%;
 
-    --primary: 0 0% 90%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 0 0% 95%; /* Lighter primary text */
+    --primary-foreground: 240 10% 10%; /* Darker primary foreground */
 
-    --secondary: 240 3.7% 12.9%;
-    --secondary-foreground: 0 0% 90%;
+    --secondary: 240 5% 18%; /* Lighter secondary background */
+    --secondary-foreground: 0 0% 95%;
 
-    --accent: 240 3.7% 12.9%;
-    --accent-foreground: 0 0% 90%;
+    --accent: 240 5% 20%; /* More visible accent */
+    --accent-foreground: 0 0% 95%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 90%;
+    --destructive: 0 70% 40%; /* More vibrant destructive color */
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 90%;
+    --success: 142 60% 50%; /* More balanced success color */
+    --success-foreground: 0 0% 100%;
 
-    --warning: 48 95% 44%;
-    --warning-foreground: 240 5.9% 10%;
+    --warning: 48 80% 50%; /* More readable warning color */
+    --warning-foreground: 240 10% 15%; /* Darker warning text */
 
-    --info: 200 98% 39%;
-    --info-foreground: 0 0% 90%;
+    --info: 200 85% 50%; /* More readable info color */
+    --info-foreground: 0 0% 100%;
 
-    --ring: 0 0% 90%;
+    --ring: 217 70% 60%; /* Softer ring color */
   }
 }
 

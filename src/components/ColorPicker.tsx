@@ -26,7 +26,7 @@ const predefinedColors = [
 const ColorPicker: React.FC<ColorPickerProps> = ({
   label,
   name,
-  value = '#4f46e5',
+  value = '#3b82f6',
   onChange
 }) => {
   const [customColor, setCustomColor] = useState(value)
@@ -85,7 +85,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             id={`${name}-custom`}
             name={name}
             type="text"
-            placeholder="#4f46e5"
+            placeholder="#3b82f6"
             value={customColor}
             onChange={handleCustomColorChange}
             className="font-mono text-sm pl-10 border-border"

@@ -37,7 +37,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDate, onDateSel
         >
           <ChevronLeft className="h-3 w-3" />
         </Button>
-        <h2 className="text-sm font-medium">
+        <h2 className="text-sm font-medium text-foreground">
           {format(currentMonth, 'MMM yyyy')}
         </h2>
         <Button 
@@ -93,7 +93,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDate, onDateSel
         days.push(
           <div
             key={day.toString()}
-            className={`h-8 flex items-center justify-center text-xs cursor-pointer rounded
+            className={`h-8 sm:h-10 flex items-center justify-center text-xs sm:text-sm cursor-pointer rounded
               ${!isCurrentMonth ? 'text-muted-foreground opacity-50' : 'text-foreground'}
               ${isSelected ? 'bg-primary text-primary-foreground' : ''}
               ${isSameDay(day, new Date(new Date().setHours(0, 0, 0, 0))) && !isSelected ? 'bg-accent text-accent-foreground' : ''}
@@ -123,7 +123,7 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({ selectedDate, onDateSel
   };
 
   return (
-    <div className="p-3 border rounded-lg bg-card">
+    <div className="p-2 sm:p-3 border rounded-lg bg-card">
       {renderHeader()}
       {renderDays()}
       {renderCells()}

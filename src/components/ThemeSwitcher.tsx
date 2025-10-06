@@ -11,7 +11,7 @@ const ThemeSwitcher = () => {
       variant="ghost"
       size="sm"
       onClick={toggleTheme}
-      className="relative"
+      className="relative rounded-full"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       {theme === 'light' ? (

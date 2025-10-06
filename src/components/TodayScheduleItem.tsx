@@ -225,33 +225,33 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
 
   const getStatusColor = () => {
     if (isLocked) {
-      return "bg-gray-200 border-gray-300";
+      return "bg-gray-500/10 border-gray-500/20";
     }
 
     switch (attendanceStatus) {
       case "attended":
-        return "bg-green-500/10 border-green-500/20";
+        return "bg-green-500/15 border-green-500/30";
       case "missed":
-        return "bg-red-500/10 border-red-500/20";
+        return "bg-red-500/15 border-red-500/30";
       case "cancelled":
-        return "bg-yellow-500/10 border-yellow-500/20";
+        return "bg-yellow-500/15 border-yellow-500/30";
       default:
-        return "bg-gray-500/10 border-gray-500/20";
+        return "bg-gray-500/15 border-gray-500/30";
     }
   };
 
   const getStatusIcon = () => {
     if (isLocked) {
-      return <Lock className="h-4 w-4 text-gray-500" />;
+      return <Lock className="h-4 w-4 text-gray-400" />;
     }
 
     switch (attendanceStatus) {
       case "attended":
-        return <Check className="h-4 w-4 text-green-500" />;
+        return <Check className="h-4 w-4 text-green-400" />;
       case "missed":
-        return <X className="h-4 w-4 text-red-500" />;
+        return <X className="h-4 w-4 text-red-400" />;
       case "cancelled":
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
+        return <AlertTriangle className="h-4 w-4 text-yellow-400" />;
       default:
         return null;
     }
@@ -262,9 +262,9 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
   return (
     <Card className={`transition-colors ${getStatusColor()}`}>
       <CardContent className="p-3">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-2">
               <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <span className="font-medium text-sm">{getTimeRange()}</span>
               {isExtraClass && (
@@ -283,15 +283,16 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                   className="text-xs flex items-center gap-1"
                 >
                   <Lock className="h-3 w-3" />
-                  Locked
+                  <span className="hidden sm:inline">Locked</span>
+                  <span className="sm:hidden">L</span>
                 </Badge>
               )}
             </div>
 
             <div className="space-y-2">
               {/* Subject Selection */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground min-w-[100px]">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="text-xs text-muted-foreground min-w-[80px]">
                   Scheduled:
                 </span>
                 <div
@@ -306,45 +307,47 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground min-w-[100px]">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <span className="text-xs text-muted-foreground min-w-[80px]">
                   Actual:
                 </span>
-                <Select
-                  value={selectedSubject}
-                  onValueChange={handleSubjectChange}
-                  disabled={isLocked}
-                >
-                  <SelectTrigger className="w-32 text-xs h-7">
-                    <SelectValue placeholder="Subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((subj) => (
-                      <SelectItem key={subj.id} value={subj.id}>
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: subj.color }}
-                          />
-                          <span className="truncate">{subj.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedSubject}
+                    onValueChange={handleSubjectChange}
+                    disabled={isLocked}
+                  >
+                    <SelectTrigger className="w-32 sm:w-40 text-xs h-7">
+                      <SelectValue placeholder="Subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects.map((subj) => (
+                        <SelectItem key={subj.id} value={subj.id}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: subj.color }}
+                            />
+                            <span className="truncate text-xs">{subj.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
 
-                {selectedSubject !== subject.id && (
-                  <Badge variant="outline" className="text-xs">
-                    Changed
-                  </Badge>
-                )}
+                  {selectedSubject !== subject.id && (
+                    <Badge variant="outline" className="text-xs hidden sm:block">
+                      Changed
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-2">
             {/* Attendance Status Buttons */}
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               <Button
                 size="sm"
                 variant={
@@ -355,7 +358,8 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 disabled={isLocked}
               >
                 <Check className="h-3 w-3 mr-1" />
-                Attended
+                <span className="hidden sm:inline">Attended</span>
+                <span className="sm:hidden">A</span>
               </Button>
               <Button
                 size="sm"
@@ -365,7 +369,8 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 disabled={isLocked}
               >
                 <X className="h-3 w-3 mr-1" />
-                Missed
+                <span className="hidden sm:inline">Missed</span>
+                <span className="sm:hidden">M</span>
               </Button>
               <Button
                 size="sm"
@@ -377,7 +382,8 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
                 disabled={isLocked}
               >
                 <AlertTriangle className="h-3 w-3 mr-1" />
-                Cancelled
+                <span className="hidden sm:inline">Cancelled</span>
+                <span className="sm:hidden">C</span>
               </Button>
             </div>
 
@@ -422,7 +428,7 @@ const TodayScheduleItem: React.FC<TodayScheduleItemProps> = ({
               </span>
               {isLocked && importedAttendance && (
                 <div
-                  className="text-xs text-muted-foreground ml-1"
+                  className="text-xs text-muted-foreground ml-1 hidden sm:block"
                   title={`Imported up to ${importedAttendance.importDate}`}
                 >
                   (Imported)

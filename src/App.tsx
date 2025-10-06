@@ -14,11 +14,11 @@ function App() {
         <ScheduleProvider>
           <div className="min-h-screen bg-background relative">
             <Header />
-            <main className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in relative z-10">
+            <main className="container mx-auto px-4 py-6 max-w-7xl animate-fade-in relative z-10">
               <section id="schedule">
                 <TodaySchedule />
               </section>
-              <section id="timetable" className="mt-12">
+              <section id="timetable" className="mt-8 sm:mt-12">
                 <Timetable />
               </section>
             </main>

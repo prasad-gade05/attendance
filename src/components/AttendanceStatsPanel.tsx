@@ -287,7 +287,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
@@ -311,7 +311,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
           </div>
         ) : (
           <Tabs defaultValue="by-subject" className="space-y-4">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="by-subject">By Subject</TabsTrigger>
               <TabsTrigger value="overview">Overview</TabsTrigger>
             </TabsList>
@@ -341,32 +341,38 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                     </div>
                     <Progress value={overallPercentage} className="h-2" />
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-xl sm:text-2xl font-bold text-blue-500">
                           {totalStats.totalLectures}
                         </div>
-                        <div className="text-muted-foreground">
+                        <div className="text-muted-foreground text-xs sm:text-sm">
                           Total Lectures
                         </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">
+                        <div className="text-xl sm:text-2xl font-bold text-green-500">
                           {totalStats.attendedLectures}
                         </div>
-                        <div className="text-muted-foreground">Attended</div>
+                        <div className="text-muted-foreground text-xs sm:text-sm">
+                          Attended
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-red-600">
+                        <div className="text-xl sm:text-2xl font-bold text-red-500">
                           {totalStats.missedLectures}
                         </div>
-                        <div className="text-muted-foreground">Missed</div>
+                        <div className="text-muted-foreground text-xs sm:text-sm">
+                          Missed
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-yellow-600">
+                        <div className="text-xl sm:text-2xl font-bold text-yellow-500">
                           {totalStats.cancelledLectures}
                         </div>
-                        <div className="text-muted-foreground">Cancelled</div>
+                        <div className="text-muted-foreground text-xs sm:text-sm">
+                          Cancelled
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -382,7 +388,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-muted-foreground">Term Start:</span>
                       <div className="font-medium">
@@ -432,7 +438,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                       return (
                         <Card key={stat.subjectId}>
                           <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                               <div className="flex items-center gap-2">
                                 <div
                                   className="w-4 h-4 rounded-full"
@@ -447,7 +453,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                                   )}
                                 </CardTitle>
                               </div>
-                              <div className="text-right">
+                              <div className="flex items-center gap-2">
                                 <div className="text-2xl font-bold">
                                   {percentage}%
                                 </div>
@@ -464,9 +470,9 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                           </CardHeader>
                           <CardContent>
                             <Progress value={percentage} className="h-2 mb-4" />
-                            <div className="grid grid-cols-4 gap-4 text-sm">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                               <div className="text-center">
-                                <div className="font-bold text-blue-600">
+                                <div className="font-bold text-blue-500">
                                   {stat.totalLectures}
                                 </div>
                                 <div className="text-muted-foreground">
@@ -474,7 +480,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                                 </div>
                               </div>
                               <div className="text-center">
-                                <div className="font-bold text-green-600">
+                                <div className="font-bold text-green-500">
                                   {stat.attendedLectures}
                                 </div>
                                 <div className="text-muted-foreground">
@@ -482,7 +488,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                                 </div>
                               </div>
                               <div className="text-center">
-                                <div className="font-bold text-red-600">
+                                <div className="font-bold text-red-500">
                                   {stat.missedLectures}
                                 </div>
                                 <div className="text-muted-foreground">
@@ -490,7 +496,7 @@ const AttendanceStatsPanel: React.FC<AttendanceStatsPanelProps> = ({
                                 </div>
                               </div>
                               <div className="text-center">
-                                <div className="font-bold text-yellow-600">
+                                <div className="font-bold text-yellow-500">
                                   {stat.cancelledLectures}
                                 </div>
                                 <div className="text-muted-foreground">

@@ -394,25 +394,32 @@ const Timetable = () => {
             }
             setIsCombineMode(!isCombineMode)
           }}
+          className="flex-1 sm:flex-none"
         >
           <Combine className="mr-2 h-4 w-4" />
-          {isCombineMode ? 'Cancel Combine' : 'Combine Slots'}
+          <span className="hidden sm:inline">
+            {isCombineMode ? 'Cancel Combine' : 'Combine Slots'}
+          </span>
+          <span className="sm:hidden">
+            {isCombineMode ? 'Cancel' : 'Combine'}
+          </span>
         </Button>
         
         {isCombineMode && (
           <Card className="w-full">
             <CardContent className="pt-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Combine className="h-4 w-4" />
                   <span className="font-medium">
-                    Combine Mode Active: {selectedSlots.length} slot{selectedSlots.length !== 1 ? 's' : ''} selected
+                    Combine Mode: {selectedSlots.length} slot{selectedSlots.length !== 1 ? 's' : ''} selected
                   </span>
                 </div>
                 <Button 
                   onClick={handleCombineSlots} 
                   disabled={selectedSlots.length < 2}
                   size="sm"
+                  className="w-full sm:w-auto"
                 >
                   <Combine className="mr-2 h-4 w-4" />
                   Combine Selected ({selectedSlots.length})
@@ -445,12 +452,14 @@ const Timetable = () => {
                     <th className="px-4 py-3 text-left text-sm font-semibold w-32">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
-                        Time
+                        <span className="hidden sm:inline">Time</span>
+                        <span className="sm:hidden">Time</span>
                       </div>
                     </th>
                     {days.map((day) => (
-                      <th key={day} className="px-4 py-3 text-center text-sm font-semibold">
-                        {day}
+                      <th key={day} className="px-2 py-3 text-center text-sm font-semibold min-w-[80px]">
+                        <span className="hidden sm:inline">{day}</span>
+                        <span className="sm:hidden">{day.substring(0, 3)}</span>
                       </th>
                     ))}
                   </tr>
@@ -459,10 +468,12 @@ const Timetable = () => {
                   {sortedTimeSlots.map((timeSlot) => (
                     <tr key={timeSlot.id}>
                       <td className="px-4 py-3 text-center font-mono text-sm border-r">
-                        {timeSlot.startTime} - {timeSlot.endTime}
+                        <div className="text-xs sm:text-sm">
+                          {timeSlot.startTime} - {timeSlot.endTime}
+                        </div>
                         
                         {/* Delete time slot button - shows on hover */}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity float-right">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity float-right mt-1">
                           <Button 
                             size="icon" 
                             variant="ghost" 
@@ -491,7 +502,7 @@ const Timetable = () => {
                         return (
                           <td 
                             key={`${timeSlot.id}-${day}`} 
-                            className={`px-4 py-3 h-20 relative group ${
+                            className={`px-2 py-3 h-20 relative group ${
                               isCombineMode && daySlot?.subjectId ? 'cursor-pointer' : ''
                             } ${
                               isSelected ? 'ring-2 ring-primary' : ''
@@ -510,7 +521,7 @@ const Timetable = () => {
                               >
                                 <div className="text-center">
                                   <div 
-                                    className="text-sm font-medium"
+                                    className="text-xs sm:text-sm font-medium"
                                     style={{ color: subject.color }}
                                   >
                                     {subject.name}
@@ -551,7 +562,7 @@ const Timetable = () => {
                               >
                                 <div className="text-center">
                                   <div 
-                                    className="text-sm font-medium"
+                                    className="text-xs sm:text-sm font-medium"
                                     style={{ color: subject.color }}
                                   >
                                     {subject.name}
@@ -602,7 +613,7 @@ const Timetable = () => {
                                             className="w-3 h-3 rounded-full" 
                                             style={{ backgroundColor: subject.color }}
                                           />
-                                          {subject.name}
+                                          <span className="text-xs">{subject.name}</span>
                                         </div>
                                       </SelectItem>
                                     ))}
@@ -631,7 +642,7 @@ const Timetable = () => {
                                             className="w-3 h-3 rounded-full" 
                                             style={{ backgroundColor: subj.color }}
                                           />
-                                          {subj.name}
+                                          <span className="text-xs">{subj.name}</span>
                                         </div>
                                       </SelectItem>
                                     ))}
@@ -677,7 +688,7 @@ const Timetable = () => {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {subjects.map((subject) => (
                 <Card key={subject.id} className="relative">
                   <CardContent className="p-4">
@@ -687,13 +698,13 @@ const Timetable = () => {
                           className="w-10 h-10 rounded-lg flex items-center justify-center"
                           style={{ backgroundColor: subject.color }}
                         >
-                          <span className="text-white font-bold">
+                          <span className="text-white font-bold text-sm">
                             {subject.name.charAt(0).toUpperCase()}
                           </span>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-medium">{subject.name}</h3>
-                          <p className="text-xs text-muted-foreground">{subject.color}</p>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium truncate">{subject.name}</h3>
+                          <p className="text-xs text-muted-foreground truncate">{subject.color}</p>
                         </div>
                       </div>
                       

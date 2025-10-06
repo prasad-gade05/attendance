@@ -198,14 +198,15 @@ const TodaySchedule: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap gap-2 items-center">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowImportAttendanceDialog(true)}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Import
+                <span className="hidden sm:inline">Import</span>
+                <span className="sm:hidden">Imp</span>
               </Button>
               <Button
                 variant="outline"
@@ -213,7 +214,8 @@ const TodaySchedule: React.FC = () => {
                 onClick={() => setShowSimulationDialog(true)}
               >
                 <Calculator className="h-4 w-4 mr-2" />
-                Simulate
+                <span className="hidden sm:inline">Simulate</span>
+                <span className="sm:hidden">Sim</span>
               </Button>
               <Button
                 variant="outline"
@@ -221,7 +223,8 @@ const TodaySchedule: React.FC = () => {
                 onClick={() => setShowAttendanceStats(true)}
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
-                Stats
+                <span className="hidden sm:inline">Stats</span>
+                <span className="sm:hidden">St</span>
               </Button>
               <Button
                 variant="outline"
@@ -229,7 +232,8 @@ const TodaySchedule: React.FC = () => {
                 onClick={() => setShowTermSettings(true)}
               >
                 <Settings className="h-4 w-4 mr-2" />
-                Term Settings
+                <span className="hidden sm:inline">Term Settings</span>
+                <span className="sm:hidden">Term</span>
               </Button>
             </div>
 
@@ -250,7 +254,7 @@ const TodaySchedule: React.FC = () => {
         {/* Main Schedule */}
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
                 Schedule
@@ -261,7 +265,8 @@ const TodaySchedule: React.FC = () => {
                 disabled={specialDate !== null || !dateInTerm}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Extra Class
+                <span className="hidden sm:inline">Add Extra Class</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </CardHeader>
             <CardContent>
@@ -363,7 +368,7 @@ const TodaySchedule: React.FC = () => {
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-4">
                 {/* Calendar */}
-                <div className="border rounded-lg bg-white shadow-sm">
+                <div className="border rounded-lg bg-white shadow-sm dark:bg-card">
                   <CustomCalendar
                     selectedDate={selectedDate}
                     onDateSelect={(date) => {
@@ -388,13 +393,13 @@ const TodaySchedule: React.FC = () => {
                 </div>
 
                 {/* Action Buttons - Moved up and removed date display */}
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
                     onClick={() => toggleSpecialDate("holiday")}
                     className={
                       specialDate?.type === "holiday"
-                        ? "bg-red-100 border-red-300"
+                        ? "bg-destructive/10 border-destructive/30 text-destructive"
                         : ""
                     }
                   >
@@ -408,7 +413,7 @@ const TodaySchedule: React.FC = () => {
                     onClick={() => toggleSpecialDate("exam")}
                     className={
                       specialDate?.type === "exam"
-                        ? "bg-red-100 border-red-300"
+                        ? "bg-destructive/10 border-destructive/30 text-destructive"
                         : ""
                     }
                   >
