@@ -1,10 +1,6 @@
-## Smart Schedule & Attendance Management
+## Smart Schedule & Attendance Management - [Demo](https://prasad-gade05.github.io/attendance/)
 
 This is a modern, powerful, and intuitive application designed to provide a comprehensive solution for managing academic or professional schedules and attendance. It goes beyond simple tracking by offering intelligent tools to help you stay organized, meet your attendance goals, and manage your time effectively. All data is stored locally in your browser, ensuring privacy and offline access.
-
-## Live Demo
-
-- [Demo](https://prasad-gade05.github.io/attendance/)
 
 ## ✨ Why it is More Than Just an Attendance Tracker
 
