@@ -2,11 +2,11 @@
 
 This is a modern, powerful, and intuitive application designed to provide a comprehensive solution for managing academic or professional schedules and attendance. It goes beyond simple tracking by offering intelligent tools to help you stay organized, meet your attendance goals, and manage your time effectively. All data is stored locally in your browser, ensuring privacy and offline access.
 
-## ✨ Why it is More Than Just an Attendance Tracker
+## Why it is More Than Just an Attendance Tracker
 
 This application is engineered to be a proactive tool for schedule management. While it covers all the essentials, its advanced features are what make it stand out:
 
-### 🚀 Key Advanced Features
+### Key Advanced Features
 
 - **Attendance Simulation**: Set a target attendance percentage (e.g., 75%) and let TimeFlow calculate how many future classes you need to attend or can afford to miss. This feature provides a clear path to achieving your attendance goals.
 - **Import Historical Data**: Already have attendance records? Import them for any subject up to a specific date. The imported data is locked, preventing accidental changes and ensuring a clean slate for future tracking.
@@ -16,7 +16,7 @@ This application is engineered to be a proactive tool for schedule management. W
   - **On-the-Fly Subject Swapping**: If a different subject is taught during a scheduled slot, you can easily change it for that specific day without altering your base timetable.
 - **Comprehensive Term Management**: Define your academic term with start and end dates. TimeFlow uses this period to provide accurate attendance statistics and scheduling, ensuring that only relevant days are active.
 
-### 📊 Core Features
+### Core Features
 
 - **Visual Timetable**: A clean, interactive weekly grid to build and visualize your schedule.
 - **Subject & Time Slot Management**: Add, edit, and delete subjects with custom names and colors. Create and manage time slots to fit your daily routine.
@@ -27,7 +27,7 @@ This application is engineered to be a proactive tool for schedule management. W
 - **Modern UI with Theming**: A clean, responsive interface with both light and dark themes to suit your preference.
 - **Local Data Storage**: All your data is securely stored in your browser using IndexedDB, which means it's private and available offline.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -64,7 +64,7 @@ This application is engineered to be a proactive tool for schedule management. W
 - **Routing**: [React Router](https://reactrouter.com/)
 - **Date Management**: [date-fns](https://date-fns.org/)
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 D:/AI_SLOP/attend20/
